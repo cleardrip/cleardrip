@@ -10,6 +10,7 @@ export default function AdminProductsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalPage, setTotalPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
@@ -24,13 +25,13 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
-  }, [page]);
+  }, [page, searchTerm]); 
 
   async function fetchProducts() {
     setLoading(true);
     setError(null);
     try {
-      const res = await ProductsClass.getAllProducts(page, limit);
+      const res = await ProductsClass.getAllProducts(page, limit, searchTerm);
       setProducts(res.products);
       setTotalPage(res.totalPage);
     } catch (e) {
@@ -117,7 +118,16 @@ export default function AdminProductsPage() {
         Admin Products
       </h1>
 
-      {/* Error message */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+      </div>
+
       {error && (
         <p className="text-red-600 bg-red-50 border border-red-200 p-3 rounded-md max-w-xl mx-auto mb-6 text-center shadow-sm">
           {error}
