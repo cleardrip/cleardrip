@@ -99,146 +99,149 @@ export default function SubscriptionsSection() {
   }
 
   return (
-    <section
-      className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100"
-      aria-busy={loading}
-    >
-      <PaymentProcessingModal open={isProcessing} total={getTotalAmount} />
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="text-center mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-blue-100 text-blue-800 border border-blue-200">
-            <Sparkles className="w-4 h-4" />
-            Available Subscriptions
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-blue-900" title="Compare subscription plans">
-            Choose your plan.
-            <br className="hidden sm:block" />
-            <span className="text-gray-900">We'll handle the rest</span>
-          </h2>
-          <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-gray-700">
-            Transparent pricing with no hidden fees. Choose the plan that fits your needs.
-          </p>
-        </div>
-
-        {/* Main content */}
-        <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 items-stretch">
-          {/* Promotional Card */}
-          <div className="xl:w-1/3 order-3 xl:order-1">
-            <div className="rounded-3xl p-8 lg:p-10 text-white h-full relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-xl">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Star className="w-6 h-6 text-yellow-300" />
-                  </div>
-                  <span className="text-yellow-300 font-semibold text-base">Special Offer</span>
-                </div>
-
-                <h3 className="text-2xl lg:text-3xl font-bold mb-6 leading-tight text-white">
-                  Save more with annual plans — exclusive loyalty discount included.
-                </h3>
-
-                <div className="space-y-3 mb-8">
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
-                    <span className="text-white text-base">No setup fees</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
-                    <span className="text-white text-base">24/7 customer support</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
-                    <span className="text-white text-base">Money-back guarantee</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
-                    <span className="text-white text-base">Easy installation</span>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <img
-                    src="/manspeaking.png"
-                    alt="Happy customer testimonial illustration"
-                    title="Happy customer testimonial"
-                    className="w-full h-48 lg:h-56 object-contain opacity-90"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
+    <div className="bg-white">
+      <section
+        className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100"
+        aria-busy={loading}
+      >
+        <PaymentProcessingModal open={isProcessing} total={getTotalAmount} />
+        <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12 lg:mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-blue-100 text-blue-800 border border-blue-200">
+              <Sparkles className="w-4 h-4" />
+              Available Subscriptions
             </div>
-          </div>
-
-          {/* Plans Grid */}
-          <div className="xl:w-7/12 order-1 xl:order-2">
-            {loading ? (
-              <LoadingSkeleton />
-            ) : error ? (
-              <div className="text-center py-20 text-xl text-red-600 font-semibold">{error}</div>
-            ) : plans.length === 0 ? (
-              <div className="text-center py-20 text-xl text-gray-700 font-medium">
-                No subscriptions found.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                {plans.map((plan, index) => {
-                  const IconComponent = iconMap[plan.name] || Shield;
-                  return (
-                    <PricingCard
-                      key={plan.id}
-                      plan={plan}
-                      IconComponent={IconComponent}
-                      index={index}
-                      onSubscribe={() => handleSubscribe(plan.id)}
-                      isProcessing={isProcessing}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="mt-16 lg:mt-20 text-center">
-          <div className="rounded-2xl p-8 max-w-4xl mx-auto bg-white shadow-lg border border-gray-200">
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">
-              Still have questions?
-            </h3>
-            <p className="mb-6 text-lg text-gray-700">
-              Our team is here to help you choose the right plan for your needs
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-blue-900" title="Compare subscription plans">
+              Choose your plan.
+              <br className="hidden sm:block" />
+              <span className="text-gray-900">We'll handle the rest</span>
+            </h2>
+            <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-gray-700">
+              Transparent pricing with no hidden fees. Choose the plan that fits your needs.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="outline"
-                size="lg"
-                title="Contact our sales team"
-                aria-label="Contact Sales"
-                className="rounded-full px-8 py-6 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50 contact-btn cursor-pointer font-semibold"
-                onClick={() => window.location.href = "mailto:cleardripsolutions@gmail.com"}
-              >
-                Contact Sales
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                title="View frequently asked questions"
-                aria-label="View FAQ"
-                className="rounded-full px-8 py-6 text-lg border-2 border-gray-600 text-gray-700 hover:bg-gray-50 faq-btn cursor-pointer font-semibold"
-                onClick={() => window.location.href = '/services'}
-              >
-                View Services
-              </Button>
+          </div>
+
+          {/* Main content */}
+          <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 items-stretch">
+            {/* Promotional Card */}
+            <div className="xl:w-1/3 order-3 xl:order-1">
+              <div className="rounded-3xl p-8 lg:p-10 text-white h-full relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                      <Star className="w-6 h-6 text-yellow-300" />
+                    </div>
+                    <span className="text-yellow-300 font-semibold text-base">Special Offer</span>
+                  </div>
+
+                  <h3 className="text-2xl lg:text-3xl font-bold mb-6 leading-tight text-white">
+                    Save more with annual plans — exclusive loyalty discount included.
+                  </h3>
+
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <span className="text-white text-base">No setup fees</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <span className="text-white text-base">24/7 customer support</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <span className="text-white text-base">Money-back guarantee</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <span className="text-white text-base">Easy installation</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <img
+                      src="/manspeaking.png"
+                      alt="Happy customer testimonial illustration"
+                      title="Happy customer testimonial"
+                      className="w-full h-48 lg:h-56 object-contain opacity-90"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Plans Grid */}
+            <div className="xl:w-7/12 order-1 xl:order-2">
+              {loading ? (
+                <LoadingSkeleton />
+              ) : error ? (
+                <div className="text-center py-20 text-xl text-red-600 font-semibold">{error}</div>
+              ) : plans.length === 0 ? (
+                <div className="text-center py-20 text-xl text-gray-700 font-medium">
+                  No subscriptions found.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {plans.map((plan, index) => {
+                    const IconComponent = iconMap[plan.name] || Shield;
+                    return (
+                      <PricingCard
+                        key={plan.id}
+                        plan={plan}
+                        IconComponent={IconComponent}
+                        index={index}
+                        onSubscribe={() => handleSubscribe(plan.id)}
+                        isProcessing={isProcessing}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-16 lg:mt-20 text-center">
+            <div className="rounded-2xl p-8 max-w-4xl mx-auto bg-white shadow-lg border border-gray-200">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                Still have questions?
+              </h3>
+              <p className="mb-6 text-lg text-gray-700">
+                Our team is here to help you choose the right plan for your needs
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  title="Contact our sales team"
+                  aria-label="Contact Sales"
+                  className="rounded-full px-8 py-6 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50 contact-btn cursor-pointer font-semibold"
+                  onClick={() => window.location.href = "mailto:cleardripsolutions@gmail.com"}
+                >
+                  Contact Sales
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  title="View frequently asked questions"
+                  aria-label="View FAQ"
+                  className="rounded-full px-8 py-6 text-lg border-2 border-gray-600 text-gray-700 hover:bg-gray-50 faq-btn cursor-pointer font-semibold"
+                  onClick={() => window.location.href = '/services'}
+                >
+                  View Services
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
       <Footer />
-    </section>
+    </div >
   );
 }
 
