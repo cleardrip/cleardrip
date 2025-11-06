@@ -36,7 +36,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
-    const { addToCart } = useCart();
+    const [isInCart, setIsInCart] = useState(false);
+    const [cartQuantity, setCartQuantity] = useState(0);
+    const { addToCart, removeFromCart } = useCart();
     const addToCartLoading = useRef(false);
 
     useEffect(() => {
@@ -80,12 +82,38 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             addToCart(cartItem);
         }
 
+        setIsInCart(true);
+        setCartQuantity(quantity);
+
         toast.success(`Added ${quantity} ${product.name}(s) to cart!`, {
             description: 'You can view your cart to proceed to checkout.',
             action: { label: 'View Cart', onClick: () => router.push('/cart') }
         });
-    }
-    addToCartLoading.current = false;
+
+        addToCartLoading.current = false;
+    };
+
+    const handleIncreaseCartQuantity = () => {
+        if (!product) return;
+
+        const cartItem = {
+            id: product.id,
+            name: product.name,
+            price: Number(product.price),
+            originalPrice: Number(product.price),
+            image: product.image,
+        };
+
+        addToCart(cartItem);
+        setCartQuantity(prev => prev + 1);
+    };
+
+    const handleDecreaseCartQuantity = () => {
+        if (!product || cartQuantity <= 1) return;
+
+        removeFromCart(product.id);
+        setCartQuantity(prev => prev - 1);
+    };
 
     const handleBuyNow = () => {
         if (addToCartLoading.current) return;
@@ -204,57 +232,101 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                             </div>
 
                             <div className="space-y-3 sm:space-y-4">
-                                <div className="flex items-center gap-3 sm:gap-4">
-                                    <span className="font-medium text-gray-900 text-sm sm:text-base">Quantity:</span>
-                                    <div className="flex items-center border border-gray-200 rounded-lg" role="group" aria-label="Quantity selector">
+                                {!isInCart ? (
+                                    <>
+                                        <div className="flex items-center gap-3 sm:gap-4">
+                                            <span className="font-medium text-gray-900 text-sm sm:text-base">Quantity:</span>
+                                            <div className="flex items-center border border-gray-200 rounded-lg" role="group" aria-label="Quantity selector">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                    className="h-9 w-9 sm:h-10 sm:w-10 p-0"
+                                                    aria-label="Decrease quantity"
+                                                    title="Decrease quantity"
+                                                >
+                                                    <Minus className="h-4 w-4" aria-hidden="true" />
+                                                </Button>
+                                                <span className="w-10 sm:w-12 text-center font-medium text-sm sm:text-base" aria-live="polite" aria-atomic="true">{quantity}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setQuantity(quantity + 1)}
+                                                    className="h-9 w-9 sm:h-10 sm:w-10 p-0"
+                                                    aria-label="Increase quantity"
+                                                    title="Increase quantity"
+                                                >
+                                                    <Plus className="h-4 w-4" aria-hidden="true" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                            <Button
+                                                onClick={handleAddToCart}
+                                                variant="outline"
+                                                size="lg"
+                                                className={`flex-1 h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                disabled={addToCartLoading.current}
+                                                aria-label={`Add ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart`}
+                                                title="Add to cart"
+                                            >
+                                                {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />}
+                                                <span className="text-black">Add to cart</span>
+                                            </Button>
+                                            <Button
+                                                onClick={handleBuyNow}
+                                                size="lg"
+                                                className={`flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                disabled={addToCartLoading.current}
+                                                aria-label={`Buy ${quantity} ${product.name}${quantity > 1 ? 's' : ''} now`}
+                                                title="Buy now"
+                                            >
+                                                {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <span className="text-white">Buy now</span>}
+                                            </Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                        <div className="flex items-center justify-between border border-gray-300 rounded-lg px-4 py-3 flex-1">
+                                            <span className="font-medium text-gray-900 text-sm sm:text-base">In Cart:</span>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={handleDecreaseCartQuantity}
+                                                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                                                    aria-label="Decrease cart quantity"
+                                                    title="Decrease quantity"
+                                                    disabled={cartQuantity <= 1}
+                                                >
+                                                    <Minus className="h-4 w-4" aria-hidden="true" />
+                                                </Button>
+                                                <span className="w-8 text-center font-semibold text-base" aria-live="polite">{cartQuantity}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={handleIncreaseCartQuantity}
+                                                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                                                    aria-label="Increase cart quantity"
+                                                    title="Increase quantity"
+                                                >
+                                                    <Plus className="h-4 w-4" aria-hidden="true" />
+                                                </Button>
+                                            </div>
+                                        </div>
                                         <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="h-9 w-9 sm:h-10 sm:w-10 p-0"
-                                            aria-label="Decrease quantity"
-                                            title="Decrease quantity"
+                                            onClick={() => router.push('/cart')}
+                                            size="lg"
+                                            className="flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                                            aria-label="View cart"
+                                            title="View cart"
                                         >
-                                            <Minus className="h-4 w-4" aria-hidden="true" />
-                                        </Button>
-                                        <span className="w-10 sm:w-12 text-center font-medium text-sm sm:text-base" aria-live="polite" aria-atomic="true">{quantity}</span>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setQuantity(quantity + 1)}
-                                            className="h-9 w-9 sm:h-10 sm:w-10 p-0"
-                                            aria-label="Increase quantity"
-                                            title="Increase quantity"
-                                        >
-                                            <Plus className="h-4 w-4" aria-hidden="true" />
+                                            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
+                                            <span className="text-white">View Cart</span>
                                         </Button>
                                     </div>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                                    <Button
-                                        onClick={handleAddToCart}
-                                        variant="outline"
-                                        size="lg"
-                                        className={`flex-1 h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        disabled={addToCartLoading.current}
-                                        aria-label={`Add ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart`}
-                                        title="Add to cart"
-                                    >
-                                        {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />}
-                                        <span className="text-black">Add to cart</span>
-                                    </Button>
-                                    <Button
-                                        onClick={handleBuyNow}
-                                        size="lg"
-                                        className={`flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        disabled={addToCartLoading.current}
-                                        aria-label={`Buy ${quantity} ${product.name}${quantity > 1 ? 's' : ''} now`}
-                                        title="Buy now"
-                                    >
-                                        {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <span className="text-white">Buy now</span>}
-                                    </Button>
-                                </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-lg sm:rounded-xl" role="list" aria-label="Product benefits">
