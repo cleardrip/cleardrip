@@ -41,6 +41,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const { addToCart, removeFromCart } = useCart();
     const addToCartLoading = useRef(false);
 
+    // Check if product is in stock
+    const isInStock = product ? (product.inventory ?? 0) > 0 : false;
+    const availableStock = product?.inventory ?? 0;
+
     useEffect(() => {
         if (productId) {
             loadProductDetails();
@@ -67,7 +71,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     };
 
     const handleAddToCart = () => {
-        if (!product || addToCartLoading.current) return;
+        if (!product || addToCartLoading.current || !isInStock) return;
         addToCartLoading.current = true;
 
         const cartItem = {
@@ -116,7 +120,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     };
 
     const handleBuyNow = () => {
-        if (addToCartLoading.current) return;
+        if (addToCartLoading.current || !isInStock) return;
         handleAddToCart();
         router.push('/cart');
     };
@@ -229,6 +233,25 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                         ₹{Number(product.price).toLocaleString('en-IN')}
                                     </div>
                                 </div>
+
+                                {/* Stock Status Indicator */}
+                                <div className="mb-4">
+                                    {isInStock ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span className="text-sm text-green-700 font-medium">
+                                                In Stock ({availableStock} available)
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            <span className="text-sm text-red-700 font-medium">
+                                                Out of Stock
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-3 sm:space-y-4">
@@ -244,6 +267,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                                     className="h-9 w-9 sm:h-10 sm:w-10 p-0"
                                                     aria-label="Decrease quantity"
                                                     title="Decrease quantity"
+                                                    disabled={!isInStock || quantity <= 1}
                                                 >
                                                     <Minus className="h-4 w-4" aria-hidden="true" />
                                                 </Button>
@@ -251,14 +275,18 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => setQuantity(quantity + 1)}
+                                                    onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                                                     className="h-9 w-9 sm:h-10 sm:w-10 p-0"
                                                     aria-label="Increase quantity"
                                                     title="Increase quantity"
+                                                    disabled={!isInStock || quantity >= availableStock}
                                                 >
                                                     <Plus className="h-4 w-4" aria-hidden="true" />
                                                 </Button>
                                             </div>
+                                            {isInStock && quantity >= availableStock && (
+                                                <span className="text-xs text-amber-600">Max available</span>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -266,23 +294,23 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                                 onClick={handleAddToCart}
                                                 variant="outline"
                                                 size="lg"
-                                                className={`flex-1 h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                disabled={addToCartLoading.current}
+                                                className={`flex-1 h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${(addToCartLoading.current || !isInStock) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                disabled={addToCartLoading.current || !isInStock}
                                                 aria-label={`Add ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart`}
-                                                title="Add to cart"
+                                                title={!isInStock ? "Out of stock" : "Add to cart"}
                                             >
                                                 {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />}
-                                                <span className="text-black">Add to cart</span>
+                                                <span className="text-black">{!isInStock ? 'Out of Stock' : 'Add to cart'}</span>
                                             </Button>
                                             <Button
                                                 onClick={handleBuyNow}
                                                 size="lg"
-                                                className={`flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                disabled={addToCartLoading.current}
+                                                className={`flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${(addToCartLoading.current || !isInStock) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                disabled={addToCartLoading.current || !isInStock}
                                                 aria-label={`Buy ${quantity} ${product.name}${quantity > 1 ? 's' : ''} now`}
-                                                title="Buy now"
+                                                title={!isInStock ? "Out of stock" : "Buy now"}
                                             >
-                                                {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <span className="text-white">Buy now</span>}
+                                                {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <span className="text-white">{!isInStock ? 'Out of Stock' : 'Buy now'}</span>}
                                             </Button>
                                         </div>
                                     </>
