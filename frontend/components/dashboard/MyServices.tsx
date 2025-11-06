@@ -55,12 +55,12 @@ export default function MyServices() {
     const [selectedService, setSelectedService] = useState<any>(null);
     const [showFilters, setShowFilters] = useState(false);
     const [availableSlots, setAvailableSlots] = useState<any[]>([]);
-    
+
     // Modal states
     const [showRescheduleModal, setShowRescheduleModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [selectedBookingForAction, setSelectedBookingForAction] = useState<any>(null);
-    
+
     const router = useRouter();
 
     useEffect(() => {
@@ -291,7 +291,7 @@ export default function MyServices() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleRebook(service)}
-                                className="text-blue-600 cursor-pointer" 
+                                className="text-blue-600 cursor-pointer"
                             >
                                 <RotateCcw className="w-3 h-3 mr-1" />
                                 Rebook
@@ -470,14 +470,14 @@ export default function MyServices() {
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 space-y-4 lg:space-y-0">
                     <div>
-                        <h1 className="text-3xl font-bold flex items-center gap-3">
-                            <CalendarDays className="w-8 h-8 text-blue-600" />
+                        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
+                            <CalendarDays className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                             My Services
                         </h1>
-                        <p className="text-gray-600 mt-1">Manage your service bookings and appointments</p>
+                        <p className="text-sm sm:text-base text-gray-600 mt-1">Manage your service bookings and appointments</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button onClick={() => router.push('/services')} className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                        <Button onClick={() => router.push('/services')} className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer w-full sm:w-auto">
                             <Plus className="w-4 h-4 mr-2" />
                             Book New Service
                         </Button>
@@ -492,56 +492,56 @@ export default function MyServices() {
                 )}
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                     <Card>
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 sm:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">Total Services</p>
-                                    <p className="text-2xl font-bold">{data?.pagination.total || 0}</p>
+                                    <p className="text-xs sm:text-sm text-gray-600">Total Services</p>
+                                    <p className="text-xl sm:text-2xl font-bold">{data?.pagination.total || 0}</p>
                                 </div>
-                                <CalendarDays className="w-8 h-8 text-blue-500" />
+                                <CalendarDays className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 sm:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">Completed</p>
-                                    <p className="text-2xl font-bold text-green-600">
+                                    <p className="text-xs sm:text-sm text-gray-600">Completed</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-green-600">
                                         {data?.services.filter(s => s.status.toLowerCase() === 'completed').length || 0}
                                     </p>
                                 </div>
-                                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                                <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 sm:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">Pending</p>
-                                    <p className="text-2xl font-bold text-yellow-600">
+                                    <p className="text-xs sm:text-sm text-gray-600">Pending</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-yellow-600">
                                         {data?.services.filter(s => s.status.toLowerCase() === 'pending').length || 0}
                                     </p>
                                 </div>
-                                <AlertCircle className="w-8 h-8 text-yellow-500" />
+                                <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 sm:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600">This Month</p>
-                                    <p className="text-2xl font-bold text-blue-600">
+                                    <p className="text-xs sm:text-sm text-gray-600">This Month</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-blue-600">
                                         {data?.services.filter(s =>
                                             new Date(s.createdAt).getMonth() === new Date().getMonth()
                                         ).length || 0}
                                     </p>
                                 </div>
-                                <Timer className="w-8 h-8 text-blue-500" />
+                                <Timer className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                             </div>
                         </CardContent>
                     </Card>
@@ -550,20 +550,22 @@ export default function MyServices() {
                 {/* Filters and Controls */}
                 <Card className="mb-6">
                     <CardContent className="p-4">
-                        <div className="flex flex-col lg:flex-row gap-4">
-                            <div className="flex-1 relative">
+                        <div className="space-y-4">
+                            {/* Search Bar - Full Width */}
+                            <div className="w-full relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <Input
                                     placeholder="Search services..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-10 w-full"
                                 />
                             </div>
 
-                            <div className="flex gap-3 flex-wrap">
+                            {/* Filters Row */}
+                            <div className="flex flex-col sm:flex-row gap-3">
                                 <Select value={statusFilter} onValueChange={(value: StatusFilter) => setStatusFilter(value)}>
-                                    <SelectTrigger className="w-40">
+                                    <SelectTrigger className="w-full sm:w-40">
                                         <SelectValue placeholder="Filter by status" />
                                     </SelectTrigger>
                                     <SelectContent className='bg-white'>
@@ -577,7 +579,7 @@ export default function MyServices() {
                                 </Select>
 
                                 <Select value={sortBy} onValueChange={(value: SortBy) => setSortBy(value)}>
-                                    <SelectTrigger className="w-40">
+                                    <SelectTrigger className="w-full sm:w-40">
                                         <SelectValue placeholder="Sort by" />
                                     </SelectTrigger>
                                     <SelectContent className='bg-white'>
@@ -588,43 +590,46 @@ export default function MyServices() {
                                     </SelectContent>
                                 </Select>
 
-                                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                                <div className="flex border border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto">
                                     <Button
                                         variant={viewMode === 'cards' ? 'default' : 'ghost'}
                                         size="sm"
                                         onClick={() => setViewMode('cards')}
-                                        className="rounded-none"
+                                        className="rounded-none flex-1 sm:flex-none"
                                     >
-                                        <Grid3X3 className="w-4 h-4" />
+                                        <Grid3X3 className="w-4 h-4 sm:mr-2" />
+                                        <span className="hidden sm:inline">Cards</span>
                                     </Button>
                                     <Button
                                         variant={viewMode === 'table' ? 'default' : 'ghost'}
                                         size="sm"
                                         onClick={() => setViewMode('table')}
-                                        className="rounded-none"
+                                        className="rounded-none flex-1 sm:flex-none"
                                     >
-                                        <List className="w-4 h-4" />
+                                        <List className="w-4 h-4 sm:mr-2" />
+                                        <span className="hidden sm:inline">List</span>
                                     </Button>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="mt-3 text-sm text-gray-600">
-                            Showing {filteredServices.length} of {data?.pagination.total || 0} services
+                            {/* Results Count */}
+                            <div className="text-xs sm:text-sm text-gray-600">
+                                Showing {filteredServices.length} of {data?.pagination.total || 0} services
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Services Content */}
                 {viewMode === 'cards' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6">
                         {loading && <LoadingSpinner />}
                         {filteredServices.map((service) => (
                             <ServiceCard key={service.id} service={service} />
                         ))}
                     </div>
                 ) : (
-                    <Card className="mb-6">
+                    <Card className="mb-6 overflow-x-auto">
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
@@ -754,16 +759,17 @@ export default function MyServices() {
 
                 {/* Pagination */}
                 {data?.pagination && data.services.length > 0 && (
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div className="text-sm text-gray-600">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-6">
+                        <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
                             Page {currentPage} of {Math.ceil(data.pagination.total / data.pagination.total)}
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 order-1 sm:order-2">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
+                                className="text-xs sm:text-sm"
                             >
                                 Previous
                             </Button>
@@ -776,6 +782,7 @@ export default function MyServices() {
                                     }
                                 }}
                                 disabled={!data.pagination.hasNext}
+                                className="text-xs sm:text-sm"
                             >
                                 Next
                             </Button>
@@ -784,7 +791,7 @@ export default function MyServices() {
                 )}
             </div>
             {selectedService && <ServiceDetailModal />}
-            
+
             <RescheduleModal
                 isOpen={showRescheduleModal}
                 onClose={() => {
