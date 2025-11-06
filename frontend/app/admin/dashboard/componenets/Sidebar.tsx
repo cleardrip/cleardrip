@@ -104,6 +104,11 @@ export function AppSidebar() {
                 url: '/admin/dashboard/services',
                 icon: MessageSquare,
             },
+            {
+                title: 'Manage Bookings',
+                url: '/admin/dashboard/services/booked',
+                icon: CalendarCheck,
+            }
         ];
 
         // Only show additional items for superadmin

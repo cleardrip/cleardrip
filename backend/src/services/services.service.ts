@@ -122,6 +122,7 @@ export const getAllServices = async (take: number, skip: number, userId?: string
             user: true,
             slot: true,
             service: true,
+            PaymentOrder: true,
         },
         orderBy: {
             createdAt: "desc",

@@ -474,11 +474,10 @@ const ImprovedAdminServices = () => {
                                     setActiveTab(tab.id as any)
                                     setMobileMenuOpen(false)
                                 }}
-                                className={`flex items-center py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
-                                    activeTab === tab.id
-                                        ? "border-blue-500 text-blue-600"
-                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                }`}
+                                className={`flex items-center py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${activeTab === tab.id
+                                    ? "border-blue-500 text-blue-600"
+                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    }`}
                             >
                                 <tab.icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                                 {tab.label}
@@ -614,9 +613,8 @@ const ImprovedAdminServices = () => {
                                     </select>
                                     <button
                                         onClick={() => setShowInactive(!showInactive)}
-                                        className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm ${
-                                            showInactive ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                        }`}
+                                        className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm ${showInactive ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                            }`}
                                     >
                                         {showInactive ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                                         {showInactive ? "Hide Inactive" : "Show Inactive"}
@@ -630,9 +628,8 @@ const ImprovedAdminServices = () => {
                             {filteredServices.map((service) => (
                                 <div
                                     key={service.id}
-                                    className={`bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow ${
-                                        !service.isActive ? "opacity-60" : ""
-                                    }`}
+                                    className={`bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow ${!service.isActive ? "opacity-60" : ""
+                                        }`}
                                 >
                                     <div className="aspect-video bg-gray-200 relative">
                                         {service.image ? (
@@ -648,9 +645,8 @@ const ImprovedAdminServices = () => {
                                         )}
                                         <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
                                             <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    service.type === "URGENT" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"
-                                                }`}
+                                                className={`px-2 py-1 rounded-full text-xs font-medium ${service.type === "URGENT" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"
+                                                    }`}
                                             >
                                                 {service.type}
                                             </span>
@@ -785,13 +781,12 @@ const ImprovedAdminServices = () => {
                                     {slots.map((slot) => (
                                         <div
                                             key={slot.id}
-                                            className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-all ${
-                                                selectedSlotIds.includes(slot.id)
-                                                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                                                    : slot.bookingCount > 0
+                                            className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-all ${selectedSlotIds.includes(slot.id)
+                                                ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                                                : slot.bookingCount > 0
                                                     ? "border-orange-300 bg-orange-50"
                                                     : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
-                                            }`}
+                                                }`}
                                             onClick={() => slot.bookingCount === 0 && toggleSlotSelection(slot.id)}
                                         >
                                             <div className="flex items-center justify-between mb-3">
@@ -803,9 +798,8 @@ const ImprovedAdminServices = () => {
                                                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                                                 />
                                                 <span
-                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        slot.bookingCount > 0 ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800"
-                                                    }`}
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${slot.bookingCount > 0 ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800"
+                                                        }`}
                                                 >
                                                     {slot.bookingCount > 0 ? `${slot.bookingCount} Booked` : "Available"}
                                                 </span>
@@ -1121,11 +1115,10 @@ const ImprovedAdminServices = () => {
                                                     : [...bulkSlotSettings.workingDays, day.id]
                                                 setBulkSlotSettings((prev) => ({ ...prev, workingDays: newWorkingDays }))
                                             }}
-                                            className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                                                bulkSlotSettings.workingDays.includes(day.id)
-                                                    ? "bg-blue-600 text-white"
-                                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                            }`}
+                                            className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${bulkSlotSettings.workingDays.includes(day.id)
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                                }`}
                                         >
                                             {day.label}
                                         </button>
@@ -1152,7 +1145,7 @@ const ImprovedAdminServices = () => {
                                             {Math.ceil(
                                                 (new Date(bulkSlotSettings.endDate).getTime() -
                                                     new Date(bulkSlotSettings.startDate).getTime()) /
-                                                    (1000 * 60 * 60 * 24),
+                                                (1000 * 60 * 60 * 24),
                                             ) *
                                                 bulkSlotSettings.workingDays.length *
                                                 generateTimeSlots(
@@ -1200,4 +1193,4 @@ const ImprovedAdminServices = () => {
     )
 }
 
-export default ImprovedAdminServices
+export default ImprovedAdminServices;
