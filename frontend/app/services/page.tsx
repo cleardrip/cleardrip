@@ -4,28 +4,22 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { APIURL } from "@/utils/env"
 import { useRouter } from "next/navigation"
-import React, { Suspense } from "react"
+import React, { Suspense, useEffect, useState } from "react"
 import { toast } from "sonner"
 import {
   Clock,
-  DollarSign,
-  CheckCircle,
   XCircle,
   ArrowRight,
   Search,
-  Filter,
   Star,
-  Users,
-  Zap,
-  Shield,
-  Home,
-  ChevronRight,
   Grid3X3,
   List,
   SlidersHorizontal,
-  X
+  X,
+  TrendingUp,
+  Package,
+  ChevronDown
 } from "lucide-react"
-import Link from "next/link"
 import Footer from "@/components/layout/Footer"
 import { usePathname, useSearchParams } from "next/navigation"
 
@@ -47,20 +41,103 @@ interface Service {
 type ViewMode = 'grid' | 'list'
 type SortBy = 'name' | 'price-low' | 'price-high' | 'duration' | 'newest'
 
-function ServicesPage() {
-  const [services, setServices] = React.useState<Service[]>([])
-  const [filteredServices, setFilteredServices] = React.useState<Service[]>([])
-  const [loading, setLoading] = React.useState<boolean>(true)
-  const [error, setError] = React.useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = React.useState<string>("")
-  const [selectedType, setSelectedType] = React.useState<string>("all")
-  const [sortBy, setSortBy] = React.useState<SortBy>("name")
-  const [viewMode, setViewMode] = React.useState<ViewMode>("grid")
-  const [showFilters, setShowFilters] = React.useState<boolean>(false)
-  const [rating, setRating] = React.useState<number>(4.5)
+// Skeleton Components
+function SearchBarSkeleton() {
+  return (
+    <div className="mb-8 space-y-4 animate-pulse">
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="relative flex-1 max-w-xl">
+          <div className="h-12 bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-100">
+            <div className="w-12 h-12"></div>
+            <div className="w-px h-6 bg-gray-200"></div>
+            <div className="w-12 h-12"></div>
+          </div>
+          <div className="h-12 w-28 bg-gray-200 rounded-lg"></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ServiceCardSkeleton({ viewMode }: { viewMode: ViewMode }) {
+  return (
+    <Card className={`overflow-hidden bg-white ${viewMode === 'list' ? 'flex flex-col md:flex-row' : ''}`}>
+      <div className={`${viewMode === 'list' ? 'md:w-2/5 h-56 md:h-auto' : 'aspect-[16/10]'} bg-gray-200 animate-pulse`}></div>
+      <div className={`p-6 ${viewMode === 'list' ? 'md:w-3/5 flex flex-col justify-between' : ''}`}>
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 space-y-2">
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+            </div>
+            <div className="h-7 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+          </div>
+        </div>
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="h-8 bg-gray-200 rounded animate-pulse w-24"></div>
+            <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-28"></div>
+          </div>
+          <div className="h-11 bg-gray-200 rounded-lg animate-pulse w-full"></div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function ServicesGridSkeleton({ viewMode }: { viewMode: ViewMode }) {
+  return (
+    <>
+      <SearchBarSkeleton />
+      <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}`}>
+        {[...Array(6)].map((_, i) => (
+          <ServiceCardSkeleton key={i} viewMode={viewMode} />
+        ))}
+      </div>
+    </>
+  )
+}
+
+const ServicesPage = () => {
+  const [services, setServices] = useState<Service[]>([])
+  const [filteredServices, setFilteredServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [selectedType, setSelectedType] = useState<string>("all")
+  const [sortBy, setSortBy] = useState<SortBy>("name")
+  const [viewMode, setViewMode] = useState<ViewMode>("grid")
+  const [showFilters, setShowFilters] = useState<boolean>(false)
+  const [rating, setRating] = useState<number>(4.5)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  // Debounce function
+  const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value)
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value)
+      }, delay)
+
+      return () => {
+        clearTimeout(handler)
+      }
+    }, [value, delay])
+
+    return debouncedValue
+  }
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
   const fetchServices = async () => {
     setLoading(true)
@@ -114,7 +191,6 @@ function ServicesPage() {
     }
   }, [searchParams])
 
-  // Keep URL in sync when selectedType changes
   const updateQueryParam = React.useCallback((key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value && value !== "all") {
@@ -126,25 +202,21 @@ function ServicesPage() {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }, [pathname, router, searchParams])
 
-  // Filter and sort services
   React.useEffect(() => {
     let filtered = [...services]
 
-    // Filter by search query
-    if (searchQuery.trim()) {
+    if (debouncedSearchQuery.trim()) {
       filtered = filtered.filter(service =>
-        service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.type.toLowerCase().includes(searchQuery.toLowerCase())
+        service.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        service.description.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        service.type.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
       )
     }
 
-    // Filter by type
     if (selectedType !== "all") {
       filtered = filtered.filter(service => service.type.toLowerCase() === selectedType.toLowerCase())
     }
 
-    // Sort services
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
@@ -162,7 +234,7 @@ function ServicesPage() {
     })
 
     setFilteredServices(filtered)
-  }, [services, searchQuery, selectedType, sortBy])
+  }, [services, debouncedSearchQuery, selectedType, sortBy])
 
   const handleBookService = (service: Service) => {
     if (!service.isActive) {
@@ -181,300 +253,120 @@ function ServicesPage() {
 
   const ServiceCard = ({ service }: { service: Service }) => (
     <Card
-      className={`overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group ${!service.isActive ? 'opacity-75' : ''
-        } ${viewMode === 'list' ? 'flex-row' : ''}`}
+      className={`overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group bg-white ${!service.isActive ? 'opacity-60' : ''
+        } ${viewMode === 'list' ? 'flex flex-col md:flex-row' : ''}`}
       onClick={() => handleBookService(service)}
     >
-      <div className={`${viewMode === 'list' ? 'w-1/3' : 'aspect-video'} bg-gray-200 overflow-hidden relative`}>
+      <div className={`${viewMode === 'list' ? 'md:w-2/5 h-56 md:h-auto' : 'aspect-[16/10]'
+        } bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden relative`}>
         <img
           src={service.image}
           alt={service.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = "https://sewamitra.up.gov.in/Upload/Service/ff974f11-4215-4b41-bb63-87f2cb358a46_.jpg";
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
         <div className="absolute top-4 left-4">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${service.isActive
-              ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-md ${service.isActive
+              ? "bg-emerald-500/90 text-white"
+              : "bg-red-500/90 text-white"
               }`}
           >
             {service.isActive ? "Available" : "Unavailable"}
           </span>
         </div>
         {service.isActive && (
-          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-1">
-            <div className="flex items-center space-x-1 px-2 py-1">
-              <Star className="w-3 h-3 text-yellow-400 fill-current" />
-              <span className="text-xs font-medium">{rating}</span>
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md rounded-lg shadow-lg">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span className="text-sm font-bold text-gray-900">{rating}</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className={`p-6 ${viewMode === 'list' ? 'w-2/3 flex flex-col justify-between' : ''}`}>
-        <div>
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+      <div className={`p-6 ${viewMode === 'list' ? 'md:w-3/5 flex flex-col justify-between' : ''}`}>
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 flex-1">
               {service.name}
             </h3>
-            <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+            <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg whitespace-nowrap border border-blue-100">
               {service.type}
             </span>
           </div>
 
-          <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
+          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{service.description}</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center text-green-600">
-                <span className="font-bold text-lg">₹{service.price}</span>
-              </div>
-              <div className="flex items-center text-gray-500">
-                <Clock className="h-4 w-4 mr-1" />
-                <span className="text-sm">{service.duration} mins</span>
-              </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold text-gray-900">₹{service.price}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm font-medium">{service.duration} min</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            {/* <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Users className="h-4 w-4" />
-              <span>{service.bookingCount}+ bookings</span>
-            </div> */}
-
-            <Button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleBookService(service)
-              }}
-              disabled={!service.isActive}
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
-              size="sm"
-            >
-              Book Now
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation()
+              handleBookService(service)
+            }}
+            disabled={!service.isActive}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm hover:shadow-md transition-all duration-200 font-semibold h-11"
+          >
+            Book Now
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
         </div>
       </div>
     </Card>
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <nav className="mb-8">
-            <ol className="flex items-center space-x-2 text-blue-100">
-              <li>
-                <Link href="/" className="hover:text-white transition-colors">
-                  <Home className="h-4 w-4" />
-                </Link>
-              </li>
-              <li>
-                <ChevronRight className="h-4 w-4" />
-              </li>
-              <li className="text-white font-medium">Services</li>
-            </ol>
-          </nav>
-
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Services</h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
-              Professional water care services to keep your RO system running at peak performance
-            </p>
-
-            {/* Key Features */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-              <div className="flex items-center justify-center space-x-3">
-                <Shield className="h-6 w-6 text-blue-200" />
-                <span className="text-blue-100">Certified Technicians</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <Zap className="h-6 w-6 text-blue-200" />
-                <span className="text-blue-100">Quick Service</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <CheckCircle className="h-6 w-6 text-blue-200" />
-                <span className="text-blue-100">100% Satisfaction</span>
-              </div>
+      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 relative">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
+              <Package className="h-5 w-5" />
+              <span className="text-sm font-semibold">Professional Services</span>
             </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              Our Premium Services
+            </h1>
+            <p className="text-lg sm:text-xl text-blue-50 leading-relaxed">
+              Professional water care services delivered by certified technicians to keep your RO system running at peak performance
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Services Content */}
-      <section className="py-12">
+      {/* Main Content */}
+      <section className="py-10 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Filters and Search */}
-          <div className="mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-              {/* Search Bar */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Search services..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center space-x-4">
-                {/* View Toggle */}
-                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                  >
-                    <List className="h-4 w-4" />
-                  </button>
-                </div>
-
-                {/* Filters Toggle */}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center space-x-2"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <span>Filters</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Active Filters Chips */}
-            {(selectedType !== "all" || searchQuery.trim()) && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {selectedType !== "all" && (
-                  <span className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-sm">
-                    Type: {selectedType}
-                    <button
-                      aria-label="Clear type filter"
-                      onClick={() => {
-                        setSelectedType("all")
-                        updateQueryParam("type", null)
-                      }}
-                      className="p-0.5 hover:text-blue-900"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </span>
-                )}
-                {searchQuery.trim() && (
-                  <span className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1 rounded-full text-sm">
-                    Search: {searchQuery}
-                    <button
-                      aria-label="Clear search"
-                      onClick={() => setSearchQuery("")}
-                      className="p-0.5 hover:text-gray-900"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </span>
-                )}
-                <button
-                  onClick={() => {
-                    setSelectedType("all")
-                    setSearchQuery("")
-                    updateQueryParam("type", null)
-                  }}
-                  className="text-sm text-gray-600 hover:text-gray-900 underline"
-                >
-                  Clear all
-                </button>
-              </div>
-            )}
-
-            {/* Filter Panel */}
-            {showFilters && (
-              <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Service Type Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Service Type
-                    </label>
-                    <select
-                      value={selectedType}
-                      onChange={(e) => {
-                        const newType = e.target.value
-                        setSelectedType(newType)
-                        updateQueryParam("type", newType === "all" ? null : newType.toLowerCase())
-                      }}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="all">All Types</option>
-                      {getUniqueTypes().map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Sort By */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sort By
-                    </label>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as SortBy)}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="name">Name (A-Z)</option>
-                      <option value="price-low">Price (Low to High)</option>
-                      <option value="price-high">Price (High to Low)</option>
-                      <option value="duration">Duration</option>
-                      <option value="newest">Newest First</option>
-                    </select>
-                  </div>
-
-                  {/* Results Count */}
-                  <div className="flex items-end">
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">{filteredServices.length}</span> services found
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <span className="text-lg text-gray-600">Loading services...</span>
-            </div>
-          )}
+          {/* Loading State with Skeleton */}
+          {loading && <ServicesGridSkeleton viewMode={viewMode} />}
 
           {/* Error State */}
           {error && (
-            <div className="text-center py-20">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
-                <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Services</h3>
-                <p className="text-red-600 mb-6">{error}</p>
+            <div className="flex justify-center py-20">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md text-center">
+                <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-red-800 mb-2">Error Loading Services</h3>
+                <p className="text-red-600 mb-6 text-sm">{error}</p>
                 <Button
                   onClick={fetchServices}
-                  variant="outline"
-                  className="border-red-300 text-red-700 hover:bg-red-50"
+                  className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   Try Again
                 </Button>
@@ -482,52 +374,228 @@ function ServicesPage() {
             </div>
           )}
 
-          {/* No Services State */}
-          {!loading && !error && filteredServices.length === 0 && services.length === 0 && (
-            <div className="text-center py-20">
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">No Services Available</h3>
-                <p className="text-gray-600">Please check back later for available services.</p>
-              </div>
-            </div>
-          )}
+          {/* Content when not loading */}
+          {!loading && (
+            <>
+              {/* Search and Filters Bar */}
+              <div className="mb-8 space-y-4">
+                <div className="flex flex-col lg:flex-row gap-4">
+                  {/* Search */}
+                  <div className="relative flex-1 max-w-xl">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Search services by name, description, or type..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow text-sm bg-white"
+                    />
+                  </div>
 
-          {/* No Results State */}
-          {!loading && !error && filteredServices.length === 0 && services.length > 0 && (
-            <div className="text-center py-20">
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-2">No Results Found</h3>
-                <p className="text-gray-600 mb-4">Try adjusting your search or filter criteria.</p>
-                <Button
-                  onClick={() => {
-                    setSearchQuery("")
-                    setSelectedType("all")
-                  }}
-                  variant="outline"
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            </div>
-          )}
+                  {/* View Mode & Filter Toggle */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shadow-sm bg-white">
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={`px-4 py-3 transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+                          }`}
+                        aria-label="Grid view"
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </button>
+                      <div className="w-px h-6 bg-gray-300"></div>
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`px-4 py-3 transition-colors ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+                          }`}
+                        aria-label="List view"
+                      >
+                        <List className="h-4 w-4" />
+                      </button>
+                    </div>
 
-          {/* Services Grid/List */}
-          {!loading && !error && filteredServices.length > 0 && (
-            <div className={`${viewMode === 'grid'
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
-              : 'space-y-6'
-              }`}>
-              {filteredServices.map((service) => (
-                <ServiceCard key={service.id} service={service} />
-              ))}
-            </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowFilters(!showFilters)}
+                      className="flex items-center gap-2 border-gray-300 hover:bg-gray-50 shadow-sm h-auto py-3 px-4"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      <span>Filters</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Active Filters */}
+                {(selectedType !== "all" || searchQuery.trim()) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm text-gray-600 font-medium">Active filters:</span>
+                    {selectedType !== "all" && (
+                      <button
+                        onClick={() => {
+                          setSelectedType("all")
+                          updateQueryParam("type", null)
+                        }}
+                        className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                      >
+                        {selectedType}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    {searchQuery.trim() && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        "{searchQuery}"
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSelectedType("all")
+                        setSearchQuery("")
+                        updateQueryParam("type", null)
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+
+                {/* Filters Panel */}
+                {showFilters && (
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Service Type
+                        </label>
+                        <select
+                          value={selectedType}
+                          onChange={(e) => {
+                            const newType = e.target.value
+                            setSelectedType(newType)
+                            updateQueryParam("type", newType === "all" ? null : newType.toLowerCase())
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                        >
+                          <option value="all">All Types</option>
+                          {getUniqueTypes().map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Sort By
+                        </label>
+                        <select
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value as SortBy)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                        >
+                          <option value="name">Name (A-Z)</option>
+                          <option value="price-low">Price (Low to High)</option>
+                          <option value="price-high">Price (High to Low)</option>
+                          <option value="duration">Duration</option>
+                          <option value="newest">Newest First</option>
+                        </select>
+                      </div>
+
+                      <div className="sm:col-span-2 lg:col-span-2 flex items-end">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200 w-full">
+                          <TrendingUp className="h-4 w-4 text-blue-600" />
+                          <span><span className="font-bold text-gray-900">{filteredServices.length}</span> service{filteredServices.length !== 1 ? 's' : ''} found</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Empty State - No Services */}
+              {!loading && !error && filteredServices.length === 0 && services.length === 0 && (
+                <div className="flex justify-center py-20">
+                  <div className="bg-white border border-gray-200 rounded-lg p-10 max-w-md text-center shadow-sm">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Package className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">No Services Available</h3>
+                    <p className="text-gray-600 text-sm">Please check back later for available services.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State - No Results */}
+              {!loading && !error && filteredServices.length === 0 && services.length > 0 && (
+                <div className="flex justify-center py-20">
+                  <div className="bg-white border border-gray-200 rounded-lg p-10 max-w-md text-center shadow-sm">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Search className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">No Results Found</h3>
+                    <p className="text-gray-600 mb-6 text-sm">Try adjusting your search or filter criteria.</p>
+                    <Button
+                      onClick={() => {
+                        setSearchQuery("")
+                        setSelectedType("all")
+                        updateQueryParam("type", null)
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Services Grid/List */}
+              {!loading && !error && filteredServices.length > 0 && (
+                <div className={`${viewMode === 'grid'
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                  : 'space-y-6'
+                  }`}>
+                  {filteredServices.map((service) => (
+                    <ServiceCard key={service.id} service={service} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  )
+}
+
+function ServicesLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50/50">
+      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 relative">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
+              <Package className="h-5 w-5" />
+              <span className="text-sm font-semibold">Professional Services</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              Our Premium Services
+            </h1>
+            <p className="text-lg sm:text-xl text-blue-50 leading-relaxed">
+              Professional water care services delivered by certified technicians
+            </p>
+          </div>
+        </div>
+      </section>
+      <section className="py-10 sm:py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ServicesGridSkeleton viewMode="grid" />
         </div>
       </section>
       <Footer />
@@ -535,33 +603,6 @@ function ServicesPage() {
   )
 }
 
-// Loading component for Suspense fallback
-function ServicesLoading() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Services</h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
-              Professional water care services to keep your RO system running at peak performance
-            </p>
-          </div>
-        </div>
-      </section>
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <span className="text-lg text-gray-600">Loading services...</span>
-          </div>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-// with suspense and loading
 export default function Service() {
   return (
     <Suspense fallback={<ServicesLoading />}>
