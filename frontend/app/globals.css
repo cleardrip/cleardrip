@@ -13,8 +13,8 @@
   }
 } */
 
-:root {
-  /* Blue palette */
+/* :root {
+   Blue palette 
   --blue-50:   #e6edf4;
   --blue-100:  #b0c7dd;
   --blue-200:  #8aabcc;
@@ -26,7 +26,7 @@
   --blue-800:  #012850;
   --blue-900:  #001f3d;
 
-  /* White palette */
+  White palette
   --white-50:  #fdfdfd;
   --white-100: #f8f8f8;
   --white-200: #f5f4f4;
@@ -38,17 +38,17 @@
   --white-800: #817f7f;
   --white-900: #626161;
 
-  /* Font family */
+  Font family
   --font-primary: 'Manrope', sans-serif;
-  /* Typography sizes */
-  /* --h1-size: 64px;
+  Typography sizes
+   --h1-size: 64px;
   --h1-line: 83px;
   --h2-size: 36px;
   --h2-line: 60px;
   --h3-size: 24px;
   --h3-line: 36px;
   --h4-size: 18px;
-  --h4-line: 24px; */
+  --h4-line: 24px; 
   --body-size: 16px;
   --body-line: 24px;
   --sidebar:   hsl(0 0% 98%);
@@ -59,7 +59,7 @@
   --sidebar-accent-foreground:   hsl(240 5.9% 10%);
   --sidebar-border:   hsl(220 13% 91%);
   --sidebar-ring:   hsl(217.2 91.2% 59.8%);
-}
+} */
 
 body {
   font-family: var(--font-primary);
@@ -96,7 +96,7 @@ h4, .h4 {
   line-height: var(--h4-line);
 }
 
-/* Example utility classes */
+/* Example utility classes 
 .text-blue-500 { color: var(--blue-500); }
 .bg-blue-100 { background: var(--blue-100); }
 .bg-white-100 { background: var(--white-100); }

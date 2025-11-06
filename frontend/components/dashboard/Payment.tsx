@@ -1,7 +1,6 @@
 "use client";
 import { APIURL } from '@/utils/env';
 import React from 'react'
-import { toast } from 'sonner';
 
 type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED" | "CANCELLED";
 type PaymentPurpose = "SERVICE_BOOKING" | "SUBSCRIPTION" | "PRODUCT_PURCHASE" | "OTHER";
@@ -155,7 +154,6 @@ const Payment = () => {
                 }
 
                 const data = await response.json().catch(() => null);
-                toast.info(JSON.stringify(data));
                 let payments: Payment[] = [];
                 let totalCount: number | null = null;
 
@@ -371,21 +369,23 @@ const Payment = () => {
                                         {p.items && p.items.length > 0 ? (
                                             <div className="grid gap-2">
                                                 {p.items.map((it, i) => (
-                                                    <div key={it.id ?? `${p.id ?? `payment-${pIdx}`}-item-${i}`} className="flex gap-3 items-center border border-gray-100 p-2 rounded-md">
-                                                        <div className="w-14 h-14 flex-shrink-0 bg-slate-50 flex items-center justify-center rounded-md overflow-hidden">
-                                                            {it.product?.image ? (
-                                                                <img src={it.product.image} alt={it.product.name} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="text-xs text-gray-400">No image</div>
-                                                            )}
+                                                    <div key={it.id ?? `${p.id ?? `payment-${pIdx}`}-item-${i}`} className="flex flex-col sm:flex-row gap-3 border border-gray-100 p-3 rounded-md">
+                                                        <div className="flex gap-3 flex-1 min-w-0">
+                                                            <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 bg-slate-50 flex items-center justify-center rounded-md overflow-hidden">
+                                                                {it.product?.image ? (
+                                                                    <img src={it.product.image} alt={it.product.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="text-xs text-gray-400">No image</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-semibold text-sm sm:text-base truncate">{it.product?.name ?? it.productId ?? 'Product'}</div>
+                                                                <div className="text-xs text-gray-500 line-clamp-2 sm:truncate">{it.product?.description ?? ''}</div>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="font-semibold truncate">{it.product?.name ?? it.productId ?? 'Product'}</div>
-                                                            <div className="text-xs text-gray-500 truncate">{it.product?.description ?? ''}</div>
-                                                        </div>
-                                                        <div className="text-right min-w-[120px]">
-                                                            <div className="font-semibold">{it.quantity ?? 1} × {formatCurrency(it.price ?? undefined, p.currency ?? 'INR')}</div>
-                                                            <div className="text-xs text-gray-500">{formatCurrency(it.subtotal ?? it.price ?? undefined, p.currency ?? 'INR')}</div>
+                                                        <div className="text-left sm:text-right sm:min-w-[120px] pl-12 sm:pl-0">
+                                                            <div className="font-semibold text-sm sm:text-base">{it.quantity ?? 1} × {formatCurrency(it.price ?? undefined, p.currency ?? 'INR')}</div>
+                                                            <div className="text-xs text-gray-500">Total: {formatCurrency(it.subtotal ?? it.price ?? undefined, p.currency ?? 'INR')}</div>
                                                         </div>
                                                     </div>
                                                 ))}
