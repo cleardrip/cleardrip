@@ -189,7 +189,7 @@ export default function SubscriptionsSection() {
                 size="lg"
                 title="Contact our sales team"
                 aria-label="Contact Sales"
-                onClick={()=>{}}
+                onClick={() => { window.location.href = '/contact' }}
                 className="rounded-full px-8 py-6 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50 contact-btn cursor-pointer font-semibold"
               >
                 Contact Sales
@@ -199,6 +199,7 @@ export default function SubscriptionsSection() {
                 size="lg"
                 title="View frequently asked questions"
                 aria-label="View FAQ"
+                onClick={() => { window.location.href = '#faq' }}
                 className="rounded-full px-8 py-6 text-lg border-2 border-gray-600 text-gray-700 hover:bg-gray-50 faq-btn cursor-pointer font-semibold"
               >
                 View FAQ
