@@ -229,7 +229,7 @@ export default function FeaturedProducts() {
         try {
             setLoading(true);
             setError(null);
-            const data = await ProductsClass.getAllProducts(1, 3);
+            const data = await ProductsClass.getAllProducts(1, 3, "");
             setProducts(data.products || []);
         } catch (err) {
             const errorMessage = err instanceof Error
