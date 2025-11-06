@@ -189,6 +189,7 @@ export default function SubscriptionsSection() {
                 size="lg"
                 title="Contact our sales team"
                 aria-label="Contact Sales"
+                onClick={()=>{}}
                 className="rounded-full px-8 py-6 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50 contact-btn cursor-pointer font-semibold"
               >
                 Contact Sales
@@ -245,8 +246,8 @@ function PricingCard({
   return (
     <div
       className={`pricing-card relative bg-white rounded-3xl p-8 lg:p-10 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 group ${plan.popular
-          ? 'ring-4 ring-blue-500 scale-105 lg:scale-110 border-blue-500'
-          : 'border-gray-200 hover:border-blue-400'
+        ? 'ring-4 ring-blue-500 scale-105 lg:scale-110 border-blue-500'
+        : 'border-gray-200 hover:border-blue-400'
         }`}
       title={`${plan.name} — ${plan.description}`}
       role="region"
