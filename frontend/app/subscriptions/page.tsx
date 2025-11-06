@@ -101,7 +101,7 @@ export default function SubscriptionsSection() {
   return (
     <div className="bg-white">
       <section
-        className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100"
+        className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100"
         aria-busy={loading}
       >
         <PaymentProcessingModal open={isProcessing} total={getTotalAmount} />
@@ -115,9 +115,9 @@ export default function SubscriptionsSection() {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-blue-900" title="Compare subscription plans">
               Choose your plan.
               <br className="hidden sm:block" />
-              <span className="text-gray-900">We'll handle the rest</span>
+              <span className="text-blue-800">We'll handle the rest</span>
             </h2>
-            <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-gray-700">
+            <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-blue-700">
               Transparent pricing with no hidden fees. Choose the plan that fits your needs.
             </p>
           </div>
@@ -126,16 +126,16 @@ export default function SubscriptionsSection() {
           <div className="flex flex-col xl:flex-row gap-8 lg:gap-12 items-stretch">
             {/* Promotional Card */}
             <div className="xl:w-1/3 order-3 xl:order-1">
-              <div className="rounded-3xl p-8 lg:p-10 text-white h-full relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-xl">
+              <div className="rounded-3xl p-8 lg:p-10 text-white h-full relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 shadow-xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
 
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <Star className="w-6 h-6 text-yellow-300" />
+                      <Star className="w-6 h-6 text-blue-200" />
                     </div>
-                    <span className="text-yellow-300 font-semibold text-base">Special Offer</span>
+                    <span className="text-blue-200 font-semibold text-base">Special Offer</span>
                   </div>
 
                   <h3 className="text-2xl lg:text-3xl font-bold mb-6 leading-tight text-white">
@@ -144,19 +144,19 @@ export default function SubscriptionsSection() {
 
                   <div className="space-y-3 mb-8">
                     <div className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <Check className="w-5 h-5 text-blue-200 flex-shrink-0" />
                       <span className="text-white text-base">No setup fees</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <Check className="w-5 h-5 text-blue-200 flex-shrink-0" />
                       <span className="text-white text-base">24/7 customer support</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <Check className="w-5 h-5 text-blue-200 flex-shrink-0" />
                       <span className="text-white text-base">Money-back guarantee</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-300 flex-shrink-0" />
+                      <Check className="w-5 h-5 text-blue-200 flex-shrink-0" />
                       <span className="text-white text-base">Easy installation</span>
                     </div>
                   </div>
@@ -206,11 +206,11 @@ export default function SubscriptionsSection() {
 
           {/* Bottom CTA */}
           <div className="mt-16 lg:mt-20 text-center">
-            <div className="rounded-2xl p-8 max-w-4xl mx-auto bg-white shadow-lg border border-gray-200">
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">
+            <div className="rounded-2xl p-8 max-w-4xl mx-auto bg-white shadow-lg border border-blue-200">
+              <h3 className="text-2xl font-bold mb-4 text-blue-900">
                 Still have questions?
               </h3>
-              <p className="mb-6 text-lg text-gray-700">
+              <p className="mb-6 text-lg text-blue-700">
                 Our team is here to help you choose the right plan for your needs
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -229,7 +229,7 @@ export default function SubscriptionsSection() {
                   size="lg"
                   title="View frequently asked questions"
                   aria-label="View FAQ"
-                  className="rounded-full px-8 py-6 text-lg border-2 border-gray-600 text-gray-700 hover:bg-gray-50 faq-btn cursor-pointer font-semibold"
+                  className="rounded-full px-8 py-6 text-lg border-2 border-blue-500 text-blue-700 hover:bg-blue-50 faq-btn cursor-pointer font-semibold"
                   onClick={() => window.location.href = '/services'}
                 >
                   View Services
@@ -267,7 +267,7 @@ const PricingCard = React.memo(function PricingCard({
 
   return (
     <div
-      className={`pricing-card relative bg-white rounded-3xl p-8 lg:p-10 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 group ${plan.popular ? "ring-4 ring-blue-500 scale-105 lg:scale-110 border-blue-500" : "border-gray-200 hover:border-blue-400"
+      className={`pricing-card relative bg-white rounded-3xl p-8 lg:p-10 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 group ${plan.popular ? "ring-4 ring-blue-500 scale-105 lg:scale-110 border-blue-500" : "border-blue-200 hover:border-blue-400"
         }`}
       title={`${plan.name} — ${plan.description}`}
       role="region"
@@ -293,7 +293,7 @@ const PricingCard = React.memo(function PricingCard({
 
       {/* Savings Badge */}
       {plan.savings && (
-        <div className="absolute -top-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold transform rotate-12 shadow-md" title={`Savings: ${plan.savings}`}>
+        <div className="absolute -top-2 -right-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold transform rotate-12 shadow-md" title={`Savings: ${plan.savings}`}>
           {plan.savings}
         </div>
       )}
@@ -301,16 +301,16 @@ const PricingCard = React.memo(function PricingCard({
       {/* Plan Header */}
       <div className="text-center mb-8">
         <div
-          className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg ${plan.popular ? "bg-blue-600" : "bg-gray-800"
+          className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg ${plan.popular ? "bg-blue-600" : "bg-blue-800"
             }`}
         >
           <IconComponent className="w-8 h-8 text-white" aria-hidden="true" title={`${plan.name} icon`} />
         </div>
 
-        <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-gray-900">
+        <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-blue-900">
           {plan.name}
         </h3>
-        <p className="text-base lg:text-lg text-gray-600">
+        <p className="text-base lg:text-lg text-blue-700">
           {plan.description}
         </p>
       </div>
@@ -318,14 +318,14 @@ const PricingCard = React.memo(function PricingCard({
       {/* Price Display */}
       <div className="text-center mb-8">
         <div className="flex items-baseline justify-center gap-2 mb-2">
-          <span className="text-3xl lg:text-4xl font-bold text-gray-900">
+          <span className="text-3xl lg:text-4xl font-bold text-blue-900">
             {formattedPrice}
           </span>
-          <span className="text-lg text-gray-600 font-medium">
+          <span className="text-lg text-blue-700 font-medium">
             / {durationLabel}
           </span>
         </div>
-        {String(plan.duration) === "Lifetime" && <p className="text-sm text-green-600 font-medium">One-time payment</p>}
+        {String(plan.duration) === "Lifetime" && <p className="text-sm text-blue-600 font-medium">One-time payment</p>}
       </div>
 
       {/* Features List */}
@@ -334,12 +334,12 @@ const PricingCard = React.memo(function PricingCard({
           {plan.features.map((feature, idx) => (
             <li key={idx} className="flex items-start gap-3">
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 ${plan.popular ? "bg-blue-100" : "bg-gray-100"
+                className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 ${plan.popular ? "bg-blue-100" : "bg-blue-50"
                   }`}
               >
-                <Check className={`w-3 h-3 ${plan.popular ? "text-blue-600" : "text-gray-700"}`} />
+                <Check className={`w-3 h-3 ${plan.popular ? "text-blue-600" : "text-blue-700"}`} />
               </div>
-              <span className="leading-relaxed text-gray-800">
+              <span className="leading-relaxed text-blue-900">
                 {feature}
               </span>
             </li>
@@ -352,7 +352,7 @@ const PricingCard = React.memo(function PricingCard({
         onClick={onSubscribe}
         title={`Subscribe to ${plan.name}`}
         aria-label={`Subscribe to ${plan.name}`}
-        className={`subscribe-btn w-full py-6 text-lg font-semibold rounded-2xl transition-all duration-300 group text-white shadow-lg hover:shadow-xl cursor-pointer ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-800 hover:bg-gray-900"
+        className={`subscribe-btn w-full py-6 text-lg font-semibold rounded-2xl transition-all duration-300 group text-white shadow-lg hover:shadow-xl cursor-pointer ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-800 hover:bg-blue-900"
           }`}
         disabled={!!isProcessing}
       >
@@ -374,7 +374,7 @@ const PricingCard = React.memo(function PricingCard({
 
       {/* Value Proposition */}
       <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-blue-700">
           {String(plan.duration) === "Lifetime" ? "Never worry about RO maintenance again" : "Cancel anytime, no questions asked"}
         </p>
       </div>

@@ -19,7 +19,6 @@ export default function Home() {
       <FeaturedProducts />
       <HowCleardripWorks />
       <OurServices />
-      {/* <PricingSection /> */}
       <SubscriptionsSection />
       <FAQSection />
       <AboutSection />
