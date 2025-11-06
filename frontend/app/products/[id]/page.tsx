@@ -149,27 +149,28 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                 <div className="max-w-6xl mx-auto">
                     {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 mb-8">
+                    <div className="flex items-center gap-2 mb-4 sm:mb-6 lg:mb-8 overflow-x-auto">
                         <Button
                             variant="ghost"
                             onClick={handleBackToProducts}
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 text-sm sm:text-base whitespace-nowrap"
                         >
-                            <ChevronLeft className="h-4 w-4" />
-                            Back to Products
+                            <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                            <span className="hidden sm:inline">Back to Products</span>
+                            <span className="sm:hidden">Back</span>
                         </Button>
                         <span className="text-gray-400">/</span>
-                        <span className="font-medium text-gray-900">{product.name}</span>
+                        <span className="font-medium text-gray-900 text-sm sm:text-base truncate">{product.name}</span>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
                         {/* Product Images - Only show if backend provides them */}
                         {product.image && (
                             <div className="space-y-4">
-                                <div className="aspect-square bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div className="aspect-square bg-white rounded-lg sm:rounded-xl shadow-sm overflow-hidden">
                                     <img
                                         src={product.image}
                                         alt={product.name}
@@ -180,7 +181,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         )}
 
                         {/* Product Info */}
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             <div>
                                 {/* <div className="flex items-center gap-2 mb-3">
                                     <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
@@ -194,40 +195,40 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     </div>
                                 </div> */}
 
-                                <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                                     {product.name}
                                 </h1>
 
-                                <p className="text-gray-600 text-lg mb-6">
+                                <p className="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">
                                     {product.description}
                                 </p>
 
-                                <div className="flex items-baseline gap-3 mb-6">
-                                    <div className="text-4xl font-bold text-blue-600">
+                                <div className="flex items-baseline gap-2 sm:gap-3 mb-4 sm:mb-6">
+                                    <div className="text-3xl sm:text-4xl font-bold text-blue-600">
                                         ₹{Number(product.price).toLocaleString('en-IN')}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Quantity Selector */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <span className="font-medium text-gray-900">Quantity:</span>
+                            <div className="space-y-3 sm:space-y-4">
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <span className="font-medium text-gray-900 text-sm sm:text-base">Quantity:</span>
                                     <div className="flex items-center border border-gray-200 rounded-lg">
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="h-10 w-10 p-0"
+                                            className="h-9 w-9 sm:h-10 sm:w-10 p-0"
                                         >
                                             <Minus className="h-4 w-4" />
                                         </Button>
-                                        <span className="w-12 text-center font-medium">{quantity}</span>
+                                        <span className="w-10 sm:w-12 text-center font-medium text-sm sm:text-base">{quantity}</span>
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setQuantity(quantity + 1)}
-                                            className="h-10 w-10 p-0"
+                                            className="h-9 w-9 sm:h-10 sm:w-10 p-0"
                                         >
                                             <Plus className="h-4 w-4" />
                                         </Button>
@@ -235,20 +236,20 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex gap-4">
+                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                                     <Button
                                         onClick={handleAddToCart}
                                         variant="outline"
                                         size="lg"
-                                        className="flex-1 h-12 border-gray-300 hover:border-gray-400"
+                                        className="flex-1 h-11 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base"
                                     >
-                                        <ShoppingCart className="w-5 h-5 mr-2" />
+                                        <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                                         Add to cart
                                     </Button>
                                     <Button
                                         onClick={handleBuyNow}
                                         size="lg"
-                                        className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                                        className="flex-1 h-11 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                                     >
                                         Buy now
                                     </Button>
@@ -256,32 +257,32 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                             </div>
 
                             {/* Features */}
-                            <div className="grid grid-cols-1 gap-4 p-6 bg-gray-50 rounded-xl">
+                            <div className="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-lg sm:rounded-xl">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                        <Truck className="h-5 w-5 text-green-600" />
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                                     </div>
                                     <div>
-                                        <div className="font-medium text-gray-900">Free Shipping</div>
-                                        <div className="text-sm text-gray-500">On orders above ₹500</div>
+                                        <div className="font-medium text-gray-900 text-sm sm:text-base">Free Shipping</div>
+                                        <div className="text-xs sm:text-sm text-gray-500">On orders above ₹500</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <Shield className="h-5 w-5 text-blue-600" />
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                                     </div>
                                     <div>
-                                        <div className="font-medium text-gray-900">2 Year Warranty</div>
-                                        <div className="text-sm text-gray-500">Manufacturer warranty</div>
+                                        <div className="font-medium text-gray-900 text-sm sm:text-base">2 Year Warranty</div>
+                                        <div className="text-xs sm:text-sm text-gray-500">Manufacturer warranty</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                                        <RotateCcw className="h-5 w-5 text-orange-600" />
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
                                     </div>
                                     <div>
-                                        <div className="font-medium text-gray-900">30 Day Returns</div>
-                                        <div className="text-sm text-gray-500">Easy returns policy</div>
+                                        <div className="font-medium text-gray-900 text-sm sm:text-base">30 Day Returns</div>
+                                        <div className="text-xs sm:text-sm text-gray-500">Easy returns policy</div>
                                     </div>
                                 </div>
                             </div>
@@ -289,63 +290,63 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     </div>
 
                     {/* Product Description and Details */}
-                    <div className="mt-16">
+                    <div className="mt-8 sm:mt-12 lg:mt-16">
                         <Tabs defaultValue="description" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 bg-gray-100">
-                                <TabsTrigger value="description">Description</TabsTrigger>
-                                <TabsTrigger value="specifications">Specifications</TabsTrigger>
-                                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                            <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+                                <TabsTrigger value="description" className="text-xs sm:text-sm">Description</TabsTrigger>
+                                <TabsTrigger value="specifications" className="text-xs sm:text-sm">Specifications</TabsTrigger>
+                                {/* <TabsTrigger value="reviews" className="text-xs sm:text-sm">Reviews</TabsTrigger> */}
                             </TabsList>
 
-                            <TabsContent value="description" className="mt-8">
+                            <TabsContent value="description" className="mt-4 sm:mt-6 lg:mt-8">
                                 <Card className="border-0 shadow-sm">
                                     <CardHeader>
-                                        <CardTitle className="text-xl">Product Description</CardTitle>
+                                        <CardTitle className="text-lg sm:text-xl">Product Description</CardTitle>
                                     </CardHeader>
                                     <CardContent className="prose max-w-none">
-                                        <p className="text-gray-700 leading-relaxed text-lg">
+                                        <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
                                             {product.description}
                                         </p>
                                     </CardContent>
                                 </Card>
                             </TabsContent>
 
-                            <TabsContent value="specifications" className="mt-8">
+                            <TabsContent value="specifications" className="mt-4 sm:mt-6 lg:mt-8">
                                 <Card className="border-0 shadow-sm">
                                     <CardHeader>
-                                        <CardTitle className="text-xl">Specifications</CardTitle>
+                                        <CardTitle className="text-lg sm:text-xl">Specifications</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
-                                                <span className="font-medium text-gray-900">Price</span>
-                                                <span className="text-gray-700">₹{Number(product.price).toLocaleString('en-IN')}</span>
+                                        <div className="space-y-3 sm:space-y-4">
+                                            <div className="grid grid-cols-2 gap-4 py-2 sm:py-3 border-b border-gray-100">
+                                                <span className="font-medium text-gray-900 text-sm sm:text-base">Price</span>
+                                                <span className="text-gray-700 text-sm sm:text-base">₹{Number(product.price).toLocaleString('en-IN')}</span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
-                                                <span className="font-medium text-gray-900">Category</span>
-                                                <span className="text-gray-700">Water Purification</span>
+                                            <div className="grid grid-cols-2 gap-4 py-2 sm:py-3 border-b border-gray-100">
+                                                <span className="font-medium text-gray-900 text-sm sm:text-base">Category</span>
+                                                <span className="text-gray-700 text-sm sm:text-base">Water Purification</span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4 py-3">
-                                                <span className="font-medium text-gray-900">Warranty</span>
-                                                <span className="text-gray-700">2 Years</span>
+                                            <div className="grid grid-cols-2 gap-4 py-2 sm:py-3">
+                                                <span className="font-medium text-gray-900 text-sm sm:text-base">Warranty</span>
+                                                <span className="text-gray-700 text-sm sm:text-base">2 Years</span>
                                             </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </TabsContent>
 
-                            <TabsContent value="reviews" className="mt-8">
+                            {/* <TabsContent value="reviews" className="mt-4 sm:mt-6 lg:mt-8">
                                 <Card className="border-0 shadow-sm">
                                     <CardHeader>
-                                        <CardTitle className="text-xl">Customer Reviews</CardTitle>
+                                        <CardTitle className="text-lg sm:text-xl">Customer Reviews</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-center py-12 text-gray-500">
+                                        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
                                             Reviews feature coming soon...
                                         </div>
                                     </CardContent>
                                 </Card>
-                            </TabsContent>
+                            </TabsContent> */}
                         </Tabs>
                     </div>
                 </div>
