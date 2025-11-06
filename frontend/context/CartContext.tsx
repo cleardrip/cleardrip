@@ -25,6 +25,7 @@ interface CartContextType {
     getTotalAmount: () => number;
     getTotalMRP: () => number;
     getTotalDiscount: () => number;
+    loading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -39,6 +40,7 @@ export const useCart = () => {
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const { user, authenticated, authLoading } = useAuth();
 
     // Generate user-specific cart key
@@ -56,9 +58,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Don't load cart while auth is still loading
         if (authLoading) return;
 
+        setLoading(true);
         const cartKey = getCartKey();
         const savedCart = localStorage.getItem(cartKey);
-        
+
         if (savedCart) {
             try {
                 const parsedCart = JSON.parse(savedCart);
@@ -77,6 +80,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // No saved cart found, start with empty cart
             setCartItems([]);
         }
+
+        setLoading(false);
     }, [getCartKey, authLoading]);
 
     // Clear cart when user logs out
@@ -158,6 +163,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             getTotalAmount,
             getTotalMRP,
             getTotalDiscount,
+            loading
         }}>
             {children}
         </CartContext.Provider>
