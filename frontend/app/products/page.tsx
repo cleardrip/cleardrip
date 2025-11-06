@@ -22,7 +22,7 @@ export default function ProductsPage() {
     const [totalProducts, setTotalProducts] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-    const { addToCart } = useCart();
+    const { addToCart, removeFromCart } = useCart();
     const limit = 12;
 
     const totalPages = Math.ceil(totalProducts / limit);
@@ -77,7 +77,13 @@ export default function ProductsPage() {
             image: product.image,
         };
         addToCart(cartItem);
-        toast.success(`Added ${product.name} to cart!`);
+        toast.success(`Added ${product.name} to cart!`, {
+            description: "You can view your cart for checkout.",
+            action: {
+                label: 'View Cart',
+                onClick: () => router.push('/cart'),
+            },
+        });
     };
 
     const handleClearSearch = () => {
