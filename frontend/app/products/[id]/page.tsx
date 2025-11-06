@@ -236,7 +236,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                         onClick={handleAddToCart}
                                         variant="outline"
                                         size="lg"
-                                        className={`flex-1 h-11 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`flex-1 h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         disabled={addToCartLoading.current}
                                         aria-label={`Add ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart`}
                                         title="Add to cart"
@@ -247,7 +247,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     <Button
                                         onClick={handleBuyNow}
                                         size="lg"
-                                        className={`flex-1 h-11 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         disabled={addToCartLoading.current}
                                         aria-label={`Buy ${quantity} ${product.name}${quantity > 1 ? 's' : ''} now`}
                                         title="Buy now"
