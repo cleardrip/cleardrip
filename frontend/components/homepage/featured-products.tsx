@@ -8,11 +8,6 @@ import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 
-const SAMPLE_IMAGES = [
-    "/featured1.png",
-    "/featured2.png",
-    "/featured3.png",
-] as const;
 
 interface ProductCardProps {
     product: Product;
@@ -90,13 +85,6 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ product, onAddToCart, on
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
 
-    const getProductImage = useCallback(() => {
-        if (imageError || !product?.image) {
-            return SAMPLE_IMAGES[Math.floor(Math.random() * SAMPLE_IMAGES.length)];
-        }
-        return product.image;
-    }, [imageError, product?.image]);
-
     const formatPrice = useCallback((price: string | number) => {
         if (typeof price === 'number') {
             return `₹${price.toLocaleString('en-IN')}`;
@@ -129,7 +117,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ product, onAddToCart, on
                     </div>
                 )}
                 <img
-                    src={getProductImage()}
+                    src={product.image || '/placeholder-product.png'}
                     alt={`${product.name} - Water purification product`}
                     className={`w-full h-full object-contain transition-all duration-500 ${imageLoaded ? 'opacity-100 group-hover:scale-105' : 'opacity-0'
                         }`}
@@ -230,7 +218,8 @@ export default function FeaturedProducts() {
             setLoading(true);
             setError(null);
             const data = await ProductsClass.getAllProducts(1, 3, "");
-            setProducts(data.products || []);
+            // Ensure we only set maximum 3 products
+            setProducts((data.products || []).slice(0, 3));
         } catch (err) {
             const errorMessage = err instanceof Error
                 ? err.message
@@ -339,7 +328,7 @@ export default function FeaturedProducts() {
                 </header>
 
                 {/* Products Grid */}
-                {products.slice(0, 3).length > 0 ? (
+                {products.length > 0 ? (
                     <>
                         <div
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
