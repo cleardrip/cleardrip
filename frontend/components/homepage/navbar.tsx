@@ -42,7 +42,7 @@ const CartButton: React.FC<{
         <Button
             variant="ghost"
             size="sm"
-            className="p-2 relative"
+            className="p-2 relative cursor-pointer" 
             onClick={onClick}
             aria-label={`Shopping cart${count > 0 ? `, ${count} item${count > 1 ? 's' : ''}` : ''}`}
         >

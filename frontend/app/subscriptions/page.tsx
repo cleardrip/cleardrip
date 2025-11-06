@@ -8,6 +8,9 @@ import { useRazorpayPayment } from "@/hooks/usePayment";
 import { toast } from "sonner";
 import { PaymentProcessingModal } from "@/components/payment/Processing";
 import Footer from "@/components/layout/Footer";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthMiddleware } from "@/lib/middleware/authMiddleware";
+import { AuthRequiredDialog } from "@/components/auth/AuthRequiredDialog";
 
 const iconMap: Record<string, React.ElementType> = {
   Basic: Shield,
@@ -21,6 +24,13 @@ export default function SubscriptionsSection() {
   const [error, setError] = useState<string | null>(null);
   const { startPayment, isProcessing } = useRazorpayPayment();
   const [getTotalAmount, setGetTotalAmount] = useState<number | undefined>(undefined);
+  const { user } = useAuth();
+
+  const { showAuthDialog, setShowAuthDialog, requireAuth } = useAuthMiddleware({
+    redirectDelay: 5000,
+    showDialog: true,
+  });
+
 
   // inject styles once on client
   const stylesInjected = useRef(false);
@@ -69,6 +79,11 @@ export default function SubscriptionsSection() {
 
   const handleSubscribe = async (planId: string) => {
     try {
+      if (!user || !user.id) {
+        setShowAuthDialog(true);
+        return;
+      }
+      
       setGetTotalAmount(Number(plans.find(plan => plan.id === planId)?.price));
       if (isProcessing) return;
       startPayment({
@@ -105,6 +120,14 @@ export default function SubscriptionsSection() {
         aria-busy={loading}
       >
         <PaymentProcessingModal open={isProcessing} total={getTotalAmount} />
+
+        <AuthRequiredDialog
+          isOpen={showAuthDialog}
+          onClose={() => setShowAuthDialog(false)}
+          redirectDelay={5000}
+          actionType="subscription"
+        />
+
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12 lg:mb-16">

@@ -1,4 +1,3 @@
-// utils/jwt.ts
 import jwt, { SignOptions, JwtPayload } from "jsonwebtoken"
 import { JWT_SECRET, JWT_EXPIRES_IN } from "../config/env"
 

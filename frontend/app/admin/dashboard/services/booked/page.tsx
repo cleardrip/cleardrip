@@ -1,6 +1,7 @@
 "use client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { APIURL } from "@/utils/env";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -76,6 +77,7 @@ const AllBookedServices = () => {
     const itemsPerPage = 5;
     const [selectedBooking, setSelectedBooking] = useState<BookedService | null>(null); // State for selected booking
     const [modalLoading, setModalLoading] = useState(false); // State for modal loading
+    const router = useRouter();
 
     useEffect(() => {
         const fetchBookedServices = async () => {
@@ -136,7 +138,7 @@ const AllBookedServices = () => {
     const currentServices = bookedServices.slice(indexOfFirstService, indexOfLastService);
 
     const openModal = (booking: BookedService) => {
-        // setSelectedBooking(booking);
+        router.push(`/admin/dashboard/services/booked/${booking.id}`);
     };
 
     const closeModal = () => {

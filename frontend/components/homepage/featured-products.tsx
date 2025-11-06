@@ -7,6 +7,9 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthMiddleware } from "@/lib/middleware/authMiddleware";
+import { AuthRequiredDialog } from "../auth/AuthRequiredDialog";
 
 
 interface ProductCardProps {
@@ -211,6 +214,11 @@ export default function FeaturedProducts() {
     const [error, setError] = useState<string | null>(null);
     const { addToCart } = useCart();
     const router = useRouter();
+    const { user } = useAuth();
+    const { showAuthDialog, setShowAuthDialog } = useAuthMiddleware({
+        redirectDelay: 5000,
+        showDialog: true,
+    });
 
 
     const loadProducts = useCallback(async () => {
@@ -232,6 +240,10 @@ export default function FeaturedProducts() {
     }, []);
 
     const handleAddToCart = useCallback((productId: string) => {
+        if (!user || !user.id) {
+            setShowAuthDialog(true);
+            return;
+        }
         const product = products.find(p => p.id === productId);
         if (!product) {
             toast.error('Product not found');
@@ -257,6 +269,10 @@ export default function FeaturedProducts() {
 
 
     const handleBuyNow = useCallback((productId: string) => {
+        if (!user || !user.id) {
+            setShowAuthDialog(true);
+            return;
+        }
         const product = products.find(p => p.id === productId);
         if (!product) {
             toast.error('Product not found');
@@ -315,6 +331,12 @@ export default function FeaturedProducts() {
             className="py-12 sm:py-16 lg:py-20 px-4 bg-white"
             aria-label="Featured products section"
         >
+            <AuthRequiredDialog
+                isOpen={showAuthDialog}
+                onClose={() => setShowAuthDialog(false)}
+                redirectDelay={5000}
+                actionType="payment"
+            />
             <div className="max-w-7xl mx-auto">
                 {/* Section Header */}
                 <header className="text-center mb-8 sm:mb-12 lg:mb-16">

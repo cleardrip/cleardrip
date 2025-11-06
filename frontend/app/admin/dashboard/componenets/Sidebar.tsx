@@ -169,8 +169,8 @@ export function AppSidebar() {
     }
 
     return (
-        <Sidebar className="border-r border-gray-200 bg-white/95 backdrop-blur">
-            <SidebarHeader className="border-b border-gray-200 bg-white/50 p-4">
+        <Sidebar className="border-r border-gray-200 bg-white">
+            <SidebarHeader className="border-b border-gray-200 bg-white p-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
@@ -200,7 +200,7 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className="px-3 py-4">
+            <SidebarContent className="px-3 py-4 bg-white">
                 <SidebarGroup>
                     <SidebarGroupLabel className="px-2 text-xs font-semibold text-gray-600 mb-2 flex items-center justify-between">
                         <span>Navigation</span>
@@ -234,7 +234,7 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-gray-200 bg-white/50 p-4">
+            <SidebarFooter className="border-t border-gray-200 bg-white p-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <DropdownMenu>

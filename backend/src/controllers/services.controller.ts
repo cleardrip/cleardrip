@@ -5,62 +5,103 @@ import { addServiceDefinition, addSlot, bookService, cancelService, deleteServic
 import { parsePagination } from "@/utils/parsePagination";
 import { isAdmin } from "@/utils/auth";
 import { sendError } from "@/utils/errorResponse";
-import { uploadToCloudinary } from "@/utils/uploadToClaudinary";
-import { parseMultipartData } from "@/utils/parseMultipartData";
 import { createRazorpayOrder } from "@/lib/createRazorpayOrder";
+import cloudinary from "@/utils/cloudinary";
+import { prisma } from "@/lib/prisma";
 
 export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     const userId = req.user?.userId;
-    // console.log(`\n\nReq.User : ${JSON.stringify(req.user)}\n\n`);
+    
     if (!userId) {
         return sendError(reply, 401, "Unauthorized", "User ID is required");
     }
 
     try {
-        let serviceData
-        const { files, fields } = await parseMultipartData(req);
-        if (files.length > 0) {
-            console.log(`Received ${files.length} files.`);
-            if (files.length > 1) return sendError(reply, 400, "Only one file is allowed", "Invalid request");
+        const parts = req.parts();
+        const fields: Record<string, any> = {};
+        let fileBuffer: Buffer | null = null;
+        let fileInfo: { filename: string; mimetype: string } | null = null;
 
-            const parsed = serviceSchema.safeParse(fields);
-            if (!parsed.success) {
-                return sendError(reply, 400, "Validation failed", parsed.error.issues);
+        // Iterate through all parts ONCE
+        for await (const part of parts) {
+            if (part.type === 'file') {
+                console.log(`Received file: ${part.filename}`);
+                
+                // Validate file type
+                const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+                if (!allowedTypes.includes(part.mimetype)) {
+                    return sendError(reply, 400, "Unsupported file type", "Only PDF, JPEG, and PNG files are allowed");
+                }
+
+                // Convert stream to buffer
+                fileBuffer = await part.toBuffer();
+
+                // Validate file size
+                if (fileBuffer.length > 5 * 1024 * 1024) {
+                    return sendError(reply, 400, "File size exceeds 5MB limit");
+                }
+
+                fileInfo = {
+                    filename: part.filename,
+                    mimetype: part.mimetype
+                };
+            } else if (part.type === 'field') {
+                // Store all form fields
+                fields[part.fieldname] = part.value;
             }
-            let uploaded;
-            if (!(files.length === 0)) {
-                console.log("Uploading to Claudinary...");
-                uploaded = await uploadToCloudinary({
-                    files,
-                    folder: "service_images",
-                    filenamePrefix: `service_${userId}`,
-                });
-                console.log("Uploaded to Claudinary...");
-            } else console.log("Creating service without image...");
-            serviceData = {
-                ...parsed.data,
-                beforeImageUrl: uploaded && uploaded[0].url,
-            };
-            console.log(`Image Uploaded: ${uploaded && uploaded[0].url}`);
-        } else {
-            const parsed = serviceSchema.safeParse(fields);
-            if (!parsed.success) {
-                return sendError(reply, 400, "Validation failed", parsed.error.issues);
-            }
-            serviceData = parsed.data;
-            console.log("No files uploaded, proceeding without image...");
         }
+
+        // Validate required fields
+        const parsed = serviceSchema.safeParse(fields);
+        if (!parsed.success) {
+            return sendError(reply, 400, "Validation failed", parsed.error.issues);
+        }
+
+        let serviceData = parsed.data;
+
+        // Handle file upload if present
+        if (fileBuffer && fileInfo) {
+            console.log("Uploading to Cloudinary...");
+            
+            const resourceType = fileInfo.mimetype === 'application/pdf' ? 'raw' : 'image';
+
+            const uploadedUrl = await new Promise<string>((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        resource_type: resourceType,
+                        folder: 'service_images',
+                        public_id: `service_${userId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+                    },
+                    (error, result) => {
+                        if (error || !result) return reject(error);
+                        resolve(result.secure_url);
+                    }
+                );
+                
+                stream.end(fileBuffer);
+            });
+
+            console.log(`Image uploaded: ${uploadedUrl}`);
+            serviceData = {
+                ...serviceData,
+                beforeImageUrl: uploadedUrl,
+            };
+        } else {
+            console.log("No file uploaded, proceeding without image...");
+        }
+
         console.log("Service data to be booked:", serviceData);
-        // fetch service details and create Razorpay order
+
+        // Fetch service details and create Razorpay order
         const serviceDetails = await getServiceById(serviceData.serviceId, false);
         if (!serviceDetails) {
             return sendError(reply, 404, "Service not found", "Invalid service ID");
         }
-        // Ensure price is present and a number before using it
+
         if (serviceDetails.price == null) {
             return sendError(reply, 500, "Service price is missing", "Invalid service price");
         }
-        // Convert Decimal-like price (e.g. Prisma Decimal) to number safely
+
         const priceNumber: number = typeof serviceDetails.price === "number"
             ? serviceDetails.price
             : (typeof (serviceDetails.price as any)?.toNumber === "function"
@@ -70,6 +111,7 @@ export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyRepl
         if (!isFinite(priceNumber) || priceNumber <= 0) {
             return sendError(reply, 400, "Service price is invalid", "Cannot book free or negative priced service");
         }
+
         const razorpayOrder = await createRazorpayOrder(priceNumber);
         const bookedService = await bookService(serviceData, userId, razorpayOrder, priceNumber);
 
@@ -84,6 +126,7 @@ export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyRepl
         return sendError(reply, 500, "Failed to book service", error);
     }
 };
+
 
 export const GetServiceByIdHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: string };
@@ -344,4 +387,220 @@ export const CancelServiceHandler = async (req: FastifyRequest, reply: FastifyRe
         console.error("Failed to cancel service:", error);
         return sendError(reply, 500, error.message || "Failed to cancel service", error);
     }
+};
+
+
+// Get booking detail
+export const AdminGetBookingDetailHandler = async (
+  req: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const { id } = req.params as { id: string };
+
+    const booking = await prisma.serviceBooking.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            type: true,
+            price: true,
+            duration: true,
+          },
+        },
+        slot: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+          },
+        },
+        PaymentOrder: {
+          select: {
+            id: true,
+            razorpayOrderId: true,
+            amount: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return sendError(reply, 404, "Booking not found");
+    }
+
+    return reply.code(200).send({
+        success: true,
+        message: "Booking details fetched successfully",
+        booking: booking,
+    });
+  } catch (error) {
+    console.error("Error fetching booking details:", error);
+    return sendError(reply, 500, "Failed to fetch booking details", error);
+  }
+};
+
+// Update booking status and after image
+export const AdminUpdateBookingHandler = async (
+  req: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const { id } = req.params as { id: string };
+    const adminId = req.user?.userId;
+
+    if (!adminId) {
+      return sendError(reply, 401, "Unauthorized");
+    }
+
+    const parts = req.parts();
+    const fields: Record<string, any> = {};
+    let fileBuffer: Buffer | null = null;
+    let fileInfo: { filename: string; mimetype: string } | null = null;
+
+    // Iterate through all parts
+    for await (const part of parts) {
+      if (part.type === "file") {
+        // Validate file type
+        const allowedTypes = ["image/jpeg", "image/png"];
+        if (!allowedTypes.includes(part.mimetype)) {
+          return sendError(
+            reply,
+            400,
+            "Unsupported file type",
+            "Only JPEG and PNG files are allowed"
+          );
+        }
+
+        // Convert stream to buffer
+        fileBuffer = await part.toBuffer();
+
+        // Validate file size (5MB)
+        if (fileBuffer.length > 5 * 1024 * 1024) {
+          return sendError(reply, 400, "File size exceeds 5MB limit");
+        }
+
+        fileInfo = {
+          filename: part.filename,
+          mimetype: part.mimetype,
+        };
+      } else if (part.type === "field") {
+        fields[part.fieldname] = part.value;
+      }
+    }
+
+    const { status } = fields;
+
+    if (!status) {
+      return sendError(reply, 400, "Status is required");
+    }
+
+    // Fetch current booking
+    const booking = await prisma.serviceBooking.findUnique({
+      where: { id },
+      include: {
+        service: true,
+      },
+    });
+
+    if (!booking) {
+      return sendError(reply, 404, "Booking not found");
+    }
+
+    let afterImageUrl = booking.afterImageUrl;
+
+    // Upload after image if provided
+    if (fileBuffer && fileInfo) {
+      console.log("Uploading after image to Cloudinary...");
+
+      afterImageUrl = await new Promise<string>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: "image",
+            folder: "service_after_images",
+            public_id: `service_${id}_after_${Date.now()}_${Math.random()
+              .toString(36)
+              .substring(2, 15)}`,
+          },
+          (error, result) => {
+            if (error || !result) return reject(error);
+            resolve(result.secure_url);
+          }
+        );
+
+        stream.end(fileBuffer);
+      });
+
+      console.log(`After image uploaded: ${afterImageUrl}`);
+    }
+
+    // Update booking
+    const updatedBooking = await prisma.serviceBooking.update({
+      where: { id },
+      data: {
+        status,
+        afterImageUrl: afterImageUrl || undefined,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            type: true,
+            price: true,
+            duration: true,
+          },
+        },
+        slot: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+          },
+        },
+        PaymentOrder: {
+          select: {
+            id: true,
+            razorpayOrderId: true,
+            amount: true,
+            status: true,
+          },
+        },
+      },
+    });
+    return reply.code(200).send({
+        success: true,
+        message: "Booking updated successfully",
+        booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    return reply.code(400).send({
+        success: false,
+        message: "Status is required",
+        error: null,
+    });
+  }
 };

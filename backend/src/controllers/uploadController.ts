@@ -1,4 +1,3 @@
-// File: backend/src/controllers/uploadController.ts
 import cloudinary from "@/utils/cloudinary";
 import { sendError } from "@/utils/errorResponse";
 import { FastifyReply, FastifyRequest } from "fastify";

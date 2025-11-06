@@ -12,6 +12,9 @@ import { ProductsClass } from '@/lib/httpClient/product';
 import { useCart } from '@/context/CartContext';
 import { toast } from 'sonner';
 import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/context/AuthContext';
+import { useAuthMiddleware } from '@/lib/middleware/authMiddleware';
+import { AuthRequiredDialog } from '@/components/auth/AuthRequiredDialog';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -24,6 +27,12 @@ export default function ProductsPage() {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const { addToCart, removeFromCart } = useCart();
     const limit = 12;
+    const { user } = useAuth();
+
+    const { showAuthDialog, setShowAuthDialog } = useAuthMiddleware({
+        redirectDelay: 5000,
+        showDialog: true,
+    });
 
     const totalPages = Math.ceil(totalProducts / limit);
 
@@ -69,6 +78,12 @@ export default function ProductsPage() {
 
     const handleAddToCart = (product: Product, e: React.MouseEvent) => {
         e.stopPropagation();
+
+        if (!user || !user.id) {
+            setShowAuthDialog(true);
+            return;
+        }
+
         const cartItem = {
             id: product.id,
             name: product.name,
@@ -137,14 +152,14 @@ export default function ProductsPage() {
                 <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 border-gray-200 hover:border-gray-300 text-xs sm:text-sm h-8 sm:h-9"
+                    className="flex-1 border-gray-200 hover:border-gray-300 text-xs sm:text-sm h-8 sm:h-9 cursor-pointer"
                     onClick={(e) => handleAddToCart(product, e)}
                 >
                     <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     <span className="hidden xs:inline">Add to cart</span>
                     <span className="xs:hidden">Add</span>
                 </Button>
-                <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9">
+                <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9 cursor-pointer">
                     <span className="text-white">View</span>
                 </Button>
             </CardFooter>
@@ -226,6 +241,14 @@ export default function ProductsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+
+            <AuthRequiredDialog
+                isOpen={showAuthDialog}
+                onClose={() => setShowAuthDialog(false)}
+                redirectDelay={5000}
+                actionType="payment"
+            />
+
             <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
                 <div className="mb-6 sm:mb-8">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 flex items-center gap-2 sm:gap-3 text-gray-900">
@@ -250,7 +273,7 @@ export default function ProductsPage() {
                             {searchTerm && (
                                 <button
                                     onClick={handleClearSearch}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                                     aria-label="Clear search"
                                 >
                                     <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -267,7 +290,7 @@ export default function ProductsPage() {
                         </span>
                         <button
                             onClick={handleClearSearch}
-                            className="inline-flex items-center justify-center rounded hover:bg-blue-100 focus:bg-blue-200 transition-colors p-1"
+                            className="inline-flex items-center justify-center rounded hover:bg-blue-100 focus:bg-blue-200 transition-colors p-1 cursor-pointer"
                             aria-label="Clear search"
                             tabIndex={0}
                         >

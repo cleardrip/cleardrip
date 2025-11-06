@@ -1,4 +1,3 @@
-// utils/cookies.ts
 import { FastifyReply } from "fastify"
 import { NODE_ENV } from "../config/env"
 

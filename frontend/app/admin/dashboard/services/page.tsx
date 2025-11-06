@@ -34,7 +34,7 @@ interface ServiceDefinition {
     type: string
     image: string
     imageUrl: string | null
-    price: number
+    price: string | number
     duration: number
     isActive: boolean
     adminId: string
@@ -537,7 +537,16 @@ const ImprovedAdminServices = () => {
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Revenue</p>
                                         <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">
-                                            ₹{services.reduce((acc, service) => acc + service.price, 0).toLocaleString()}
+                                            ₹{services
+                                                .reduce((acc, service) => {
+                                                    const price = typeof service.price === 'string' 
+                                                        ? parseFloat(service.price.replace(/[^\d.]/g, '')) || 0
+                                                        : Number(service.price) || 0;
+                                                    return acc + price;
+                                                }, 0)
+                                                .toLocaleString('en-IN', { 
+                                                    maximumFractionDigits: 0 
+                                                })}
                                         </p>
                                         <p className="text-xs sm:text-sm text-purple-600 mt-1">Total potential</p>
                                     </div>
@@ -634,9 +643,13 @@ const ImprovedAdminServices = () => {
                                     <div className="aspect-video bg-gray-200 relative">
                                         {service.image ? (
                                             <img
-                                                src={service.image || "/placeholder.svg"}
+                                                src={service.image}
                                                 alt={service.name}
                                                 className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = "https://sewamitra.up.gov.in/Upload/Service/ff974f11-4215-4b41-bb63-87f2cb358a46_.jpg";
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">

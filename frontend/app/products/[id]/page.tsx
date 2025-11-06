@@ -21,6 +21,9 @@ import { ProductsClass } from '@/lib/httpClient/product';
 import { useCart } from '@/context/CartContext';
 import { toast } from 'sonner';
 import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/context/AuthContext';
+import { useAuthMiddleware } from '@/lib/middleware/authMiddleware';
+import { AuthRequiredDialog } from '@/components/auth/AuthRequiredDialog';
 
 interface ProductDetailPageProps {
     params: Promise<{
@@ -40,6 +43,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [cartQuantity, setCartQuantity] = useState(0);
     const { addToCart, removeFromCart } = useCart();
     const addToCartLoading = useRef(false);
+    const { user } = useAuth();
+
+    const { showAuthDialog, setShowAuthDialog } = useAuthMiddleware({
+        redirectDelay: 5000,
+        showDialog: true,
+    });
 
     // Check if product is in stock
     const isInStock = product ? (product.inventory ?? 0) > 0 : false;
@@ -71,6 +80,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     };
 
     const handleAddToCart = () => {
+
+        if (!user || !user.id) {
+            setShowAuthDialog(true);
+            return;
+        }
+
         if (!product || addToCartLoading.current || !isInStock) return;
         addToCartLoading.current = true;
 
@@ -126,6 +141,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     };
 
     const handleBuyNow = () => {
+        if (!user || !user.id) {
+            setShowAuthDialog(true);
+            return;
+        }
+
         if (addToCartLoading.current || !isInStock) return;
         handleAddToCart();
         router.push('/cart');
@@ -193,6 +213,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <AuthRequiredDialog
+                isOpen={showAuthDialog}
+                onClose={() => setShowAuthDialog(false)}
+                redirectDelay={5000}
+                actionType="payment"
+            />
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex items-center gap-2 mb-4 sm:mb-6 lg:mb-8 overflow-x-auto">
@@ -300,7 +326,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                                 onClick={handleAddToCart}
                                                 variant="outline"
                                                 size="lg"
-                                                className={`flex-1 h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${(addToCartLoading.current || !isInStock) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                className={`flex-1 cursor-pointer h-12 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${(addToCartLoading.current || !isInStock) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 disabled={addToCartLoading.current || !isInStock}
                                                 aria-label={`Add ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart`}
                                                 title={!isInStock ? "Out of stock" : "Add to cart"}
@@ -311,7 +337,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                             <Button
                                                 onClick={handleBuyNow}
                                                 size="lg"
-                                                className={`flex-1 h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${(addToCartLoading.current || !isInStock) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                className={`flex-1 cursor-pointer h-12 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${(addToCartLoading.current || !isInStock) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 disabled={addToCartLoading.current || !isInStock}
                                                 aria-label={`Buy ${quantity} ${product.name}${quantity > 1 ? 's' : ''} now`}
                                                 title={!isInStock ? "Out of stock" : "Buy now"}

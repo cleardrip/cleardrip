@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { APIURL } from "@/utils/env"
 import { useRouter } from "next/navigation"
-import React, { Suspense, useEffect, useState } from "react"
+import React, { Suspense, useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 import {
   Clock,
@@ -22,6 +22,9 @@ import {
 } from "lucide-react"
 import Footer from "@/components/layout/Footer"
 import { usePathname, useSearchParams } from "next/navigation"
+import { useAuth } from "@/context/AuthContext"
+import { useAuthMiddleware } from "@/lib/middleware/authMiddleware"
+import { AuthRequiredDialog } from "@/components/auth/AuthRequiredDialog"
 
 interface Service {
   id: string
@@ -119,6 +122,12 @@ const ServicesPage = () => {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
+
+  const { showAuthDialog, setShowAuthDialog } = useAuthMiddleware({
+    redirectDelay: 5000,
+    showDialog: true,
+  })
 
   // Debounce function
   const useDebounce = (value: string, delay: number) => {
@@ -178,11 +187,11 @@ const ServicesPage = () => {
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchServices()
   }, [])
 
-  React.useEffect(() => {
+  useEffect(() => {
     const typeFromUrl = (searchParams.get("type") || "").toLowerCase()
     if (typeFromUrl) {
       setSelectedType(typeFromUrl)
@@ -191,7 +200,7 @@ const ServicesPage = () => {
     }
   }, [searchParams])
 
-  const updateQueryParam = React.useCallback((key: string, value: string | null) => {
+  const updateQueryParam = useCallback((key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value && value !== "all") {
       params.set(key, value)
@@ -202,7 +211,7 @@ const ServicesPage = () => {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }, [pathname, router, searchParams])
 
-  React.useEffect(() => {
+  useEffect(() => {
     let filtered = [...services]
 
     if (debouncedSearchQuery.trim()) {
@@ -243,6 +252,11 @@ const ServicesPage = () => {
       })
       return
     }
+    if (!user || !user.id) {
+      setShowAuthDialog(true)
+      return
+    }
+
     router.push(`/services/${service.id}/book`)
   }
 
@@ -332,6 +346,12 @@ const ServicesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
+      <AuthRequiredDialog
+        isOpen={showAuthDialog}
+        onClose={() => setShowAuthDialog(false)}
+        redirectDelay={5000}
+        actionType="booking"
+      />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>

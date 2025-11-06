@@ -1,10 +1,14 @@
 "use client"
 
-import React from "react"
+import React, { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Shield, Clock, ArrowRight, Users, Star } from "lucide-react"
 import { APIURL } from "@/utils/env"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/AuthContext"
+import { useAuthMiddleware } from "@/lib/middleware/authMiddleware"
+import { AuthRequiredDialog } from "@/components/auth/AuthRequiredDialog"
+
 
 interface Service {
   id: string
@@ -18,20 +22,29 @@ interface Service {
   createdAt: string
 }
 
+
 export default function OurServices() {
   const [services, setServices] = React.useState<Service[]>([])
   const [loading, setLoading] = React.useState<boolean>(true)
   const [error, setError] = React.useState<string | null>(null)
-  const router = useRouter();
+  const router = useRouter()
+  const { user } = useAuth()
+
+  const { showAuthDialog, setShowAuthDialog } = useAuthMiddleware({
+    redirectDelay: 5000,
+    showDialog: true,
+  })
+
 
   const handleViewFAQ = () => {
-    const faqSection = document.getElementById('faq-section');
+    const faqSection = document.getElementById('faq-section')
     if (faqSection) {
-      faqSection.scrollIntoView({ behavior: 'smooth' });
+      faqSection.scrollIntoView({ behavior: 'smooth' })
     }
-  };
+  }
 
-  React.useEffect(() => {
+
+  useEffect(() => {
     const fetchServices = async () => {
       setLoading(true)
       setError(null)
@@ -51,6 +64,7 @@ export default function OurServices() {
     fetchServices()
   }, [])
 
+
   if (loading) {
     return (
       <section className="py-24 flex justify-center items-center">
@@ -58,6 +72,7 @@ export default function OurServices() {
       </section>
     )
   }
+
 
   if (error) {
     return (
@@ -67,8 +82,16 @@ export default function OurServices() {
     )
   }
 
+
   return (
     <section className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <AuthRequiredDialog
+        isOpen={showAuthDialog}
+        onClose={() => setShowAuthDialog(false)}
+        redirectDelay={5000}
+        actionType="booking"
+      />
+
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12 lg:mb-16">
@@ -92,6 +115,13 @@ export default function OurServices() {
               key={service.id}
               service={service}
               index={index}
+              onBookService={(service) => {
+                if (!user || !user.id) {
+                  setShowAuthDialog(true)
+                  return
+                }
+                router.push(`/services/${service.id}/book`)
+              }}
             />
           ))}
         </div>
@@ -110,6 +140,10 @@ export default function OurServices() {
                 size="lg"
                 className="w-full sm:w-auto rounded-full px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
                 onClick={() => {
+                  if (!user || !user.id) {
+                    setShowAuthDialog(true)
+                    return
+                  }
                   router.push('/services')
                 }}
               >
@@ -132,19 +166,18 @@ export default function OurServices() {
   )
 }
 
+
 function ServiceCard({
   service,
   index,
+  onBookService,
 }: {
   service: Service
   index: number
+  onBookService?: (service: Service) => void
 }) {
-  const router = useRouter()
-  const [rating] = React.useState(4.5) // static rating for display
+  const [rating] = React.useState(4.5)
 
-  const handleBookService = (service: Service) => {
-    router.push(`/services/${service.id}/book`)
-  }
 
   return (
     <div
@@ -153,7 +186,7 @@ function ServiceCard({
         animationDelay: `${index * 150}ms`,
         animation: "fadeInUp 0.6s ease-out forwards",
       }}
-      onClick={() => handleBookService(service)}
+      onClick={() => onBookService?.(service)}
     >
       {/* Service Image */}
       <div className="relative aspect-video bg-gray-200 overflow-hidden">
@@ -225,7 +258,7 @@ function ServiceCard({
             <Button
               onClick={(e) => {
                 e.stopPropagation()
-                handleBookService(service)
+                onBookService?.(service)
               }}
               disabled={!service.isActive}
               className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"

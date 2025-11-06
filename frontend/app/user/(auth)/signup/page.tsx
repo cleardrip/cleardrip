@@ -153,7 +153,9 @@ export default function SignupPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">
+                Full Name <span className="text-black-500">*</span>
+              </Label>
               <Input
                 id="name"
                 name="name"
@@ -168,7 +170,7 @@ export default function SignupPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Email Address <span className="text-black-500">*</span></Label>
                 <Input
                   id="email"
                   name="email"
@@ -182,7 +184,7 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="phone">Phone Number <span className="text-black-500">*</span></Label>
                 <Input
                   id="phone"
                   name="phone"
@@ -198,7 +200,7 @@ export default function SignupPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password <span className="text-black-500">*</span></Label>
                 <Input
                   id="password"
                   name="password"
@@ -212,7 +214,7 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">Confirm Password <span className="text-black-500">*</span></Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -227,10 +229,10 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Address Information</h3>
+              <h3 className="text-lg font-semibold">Address Information<span className="text-black-500">*</span></h3>
               
               <div className="space-y-2">
-                <Label htmlFor="address.street">Street Address</Label>
+                <Label htmlFor="address.street">Street Address<span className="text-black-500">*</span></Label>
                 <Input
                   id="address.street"
                   name="address.street"
@@ -245,7 +247,7 @@ export default function SignupPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="address.city">City</Label>
+                  <Label htmlFor="address.city">City<span className="text-black-500">*</span></Label>
                   <Input
                     id="address.city"
                     name="address.city"
@@ -259,7 +261,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address.state">State</Label>
+                  <Label htmlFor="address.state">State<span className="text-black-500">*</span></Label>
                   <Input
                     id="address.state"
                     name="address.state"
@@ -275,7 +277,7 @@ export default function SignupPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="address.postalCode">Postal Code</Label>
+                  <Label htmlFor="address.postalCode">Postal Code<span className="text-black-500">*</span></Label>
                   <Input
                     id="address.postalCode"
                     name="address.postalCode"
@@ -289,7 +291,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address.country">Country</Label>
+                  <Label htmlFor="address.country">Country<span className="text-black-500">*</span></Label>
                   <Input
                     id="address.country"
                     name="address.country"

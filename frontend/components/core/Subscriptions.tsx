@@ -7,6 +7,9 @@ import { SubscriptionPlan } from "@/lib/types/subscription";
 import { useRazorpayPayment } from "@/hooks/usePayment";
 import { toast } from "sonner";
 import { PaymentProcessingModal } from "../payment/Processing";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthMiddleware } from "@/lib/middleware/authMiddleware";
+import { AuthRequiredDialog } from "../auth/AuthRequiredDialog";
 
 const iconMap: Record<string, React.ElementType> = {
   Basic: Shield,
@@ -20,6 +23,12 @@ export default function SubscriptionsSection() {
   const [error, setError] = useState<string | null>(null);
   const { startPayment, isProcessing } = useRazorpayPayment();
   const [amount, setAmount] = useState<number | undefined>(undefined);
+  const { user } = useAuth();
+
+  const { showAuthDialog, setShowAuthDialog } = useAuthMiddleware({
+    redirectDelay: 5000,
+    showDialog: true,
+  });
 
   useEffect(() => {
     async function fetchPlans() {
@@ -54,6 +63,10 @@ export default function SubscriptionsSection() {
 
   const handleSubscribe = async (planId: string) => {
     try {
+      if (!user || !user.id) {
+        setShowAuthDialog(true);
+        return;
+      }
       if (isProcessing) return;
       setAmount(undefined);
       const plan = plans.find((p) => p.id === planId);
@@ -79,6 +92,13 @@ export default function SubscriptionsSection() {
 
   return (
     <section className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100">
+      <AuthRequiredDialog
+        isOpen={showAuthDialog}
+        onClose={() => setShowAuthDialog(false)}
+        redirectDelay={5000}
+        actionType="subscription"
+      />
+
       <PaymentProcessingModal open={isProcessing} total={amount} />
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
@@ -199,7 +219,7 @@ export default function SubscriptionsSection() {
                 size="lg"
                 title="View frequently asked questions"
                 aria-label="View FAQ"
-                onClick={() => { window.location.href = '#faq' }}
+                onClick={() => { window.location.href = '#faq-section' }}
                 className="rounded-full px-8 py-6 text-lg border-2 border-gray-600 text-gray-700 hover:bg-gray-50 faq-btn cursor-pointer font-semibold"
               >
                 View FAQ
