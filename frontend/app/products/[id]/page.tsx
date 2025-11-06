@@ -97,8 +97,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         addToCartLoading.current = false;
     };
 
+    const handleRemoveFromCart = () => {
+        if (!product || cartQuantity <= 0) return;
+        removeFromCart(product.id);
+        setCartQuantity(prev => Math.max(0, prev - 1));
+    };
+
     const handleIncreaseCartQuantity = () => {
-        if (!product) return;
+        if (!product || cartQuantity >= availableStock) return;
 
         const cartItem = {
             id: product.id,
@@ -109,7 +115,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         };
 
         addToCart(cartItem);
-        setCartQuantity(prev => prev + 1);
+        setCartQuantity(prev => Math.min(availableStock, prev + 1));
     };
 
     const handleDecreaseCartQuantity = () => {
