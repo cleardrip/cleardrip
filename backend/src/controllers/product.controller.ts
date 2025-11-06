@@ -5,10 +5,20 @@ import { createProduct, deleteProduct, getAllProducts, getProductById, updatePro
 import { sendError } from "@/utils/errorResponse";
 import { parsePagination } from "@/utils/parsePagination";
 
-export const getAllProductsHandler = async (req: FastifyRequest, reply: FastifyReply) => {
+interface ProductQueryParams {
+    search?: string;
+}
+
+export const getAllProductsHandler = async (req: FastifyRequest<{ Querystring: ProductQueryParams }>, reply: FastifyReply) => {
     try {
         const { take, skip } = parsePagination(req.query);
-        const products = await getAllProducts(take, skip);
+        const searchTerm = req.query.search;
+        // decode URI components
+        const products = await getAllProducts(
+            take,
+            skip,
+            decodeURIComponent(searchTerm ?? "")
+        );
         return reply.code(200).send(products);
     } catch (error) {
         logger.error(error, "Get all products error");

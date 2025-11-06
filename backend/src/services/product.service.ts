@@ -1,10 +1,25 @@
 import { prisma } from "@/lib/prisma";
 import { ProductInput } from "@/schemas/product.schema";
 
-export async function getAllProducts(take: number, skip: number) {
+export async function getAllProducts(take: number, skip: number, searchTerm?: string) {
+    if (searchTerm) {
+        const products = await prisma.product.findMany({
+            where: {
+                OR: [
+                    { name: { contains: searchTerm, mode: "insensitive" } },
+                    { description: { contains: searchTerm, mode: "insensitive" } }
+                ]
+            },
+            take,
+            skip,
+            orderBy: { createdAt: "desc" }
+        });
+        return products;
+    }
     const products = await prisma.product.findMany({
         take,
-        skip
+        skip,
+        orderBy: { createdAt: "desc" }
     });
     return products;
 }
