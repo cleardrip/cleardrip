@@ -204,7 +204,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ product, onAddToCart, on
                 </Button>
 
                 <Button
-                    className="flex-1 rounded-full bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 text-xs sm:text-sm md:text-base h-10 sm:h-11 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="flex-1 rounded-full bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 text-xs sm:text-sm md:text-base h-10 sm:h-11 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-white"
                     onClick={() => onBuyNow?.(product.id)}
                     aria-label={`Buy ${product.name} now`}
                     title={`Buy ${product.name} now`}
