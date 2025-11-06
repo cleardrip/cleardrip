@@ -82,11 +82,11 @@ export default function ProductsPage() {
             {/* Product Image - Only show if backend provides one */}
             {product.image && (
                 <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                    <div className="absolute top-3 left-3 z-10">
+                    {/* <div className="absolute top-3 left-3 z-10">
                         <Badge className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 text-xs">
                             Featured
                         </Badge>
-                    </div>
+                    </div> */}
                     <div className="relative w-full h-full">
                         <img
                             src={product.image}

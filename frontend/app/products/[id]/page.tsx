@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,6 +37,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const { addToCart } = useCart();
+    const addToCartLoading = useRef(false);
 
     useEffect(() => {
         if (productId) {
@@ -64,25 +65,30 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     };
 
     const handleAddToCart = () => {
-        if (!product) return;
+        if (!product || addToCartLoading.current) return;
+        addToCartLoading.current = true;
 
         const cartItem = {
             id: product.id,
             name: product.name,
             price: Number(product.price),
             originalPrice: Number(product.price),
-            image: product.image, // Only use backend image
+            image: product.image,
         };
 
-        // Add the specified quantity
         for (let i = 0; i < quantity; i++) {
             addToCart(cartItem);
         }
 
-        toast.success(`Added ${quantity} ${product.name}(s) to cart!`);
-    };
+        toast.success(`Added ${quantity} ${product.name}(s) to cart!`, {
+            description: 'You can view your cart to proceed to checkout.',
+            action: { label: 'View Cart', onClick: () => router.push('/cart') }
+        });
+    }
+    addToCartLoading.current = false;
 
     const handleBuyNow = () => {
+        if (addToCartLoading.current) return;
         handleAddToCart();
         router.push('/cart');
     };
@@ -151,14 +157,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                 <div className="max-w-6xl mx-auto">
-                    {/* Breadcrumb */}
                     <div className="flex items-center gap-2 mb-4 sm:mb-6 lg:mb-8 overflow-x-auto">
                         <Button
                             variant="ghost"
                             onClick={handleBackToProducts}
                             className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 text-sm sm:text-base whitespace-nowrap"
+                            aria-label="Back to Products"
                         >
-                            <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                            <ChevronLeft className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                             <span className="hidden sm:inline">Back to Products</span>
                             <span className="sm:hidden">Back</span>
                         </Button>
@@ -167,7 +173,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-                        {/* Product Images - Only show if backend provides them */}
                         {product.image && (
                             <div className="space-y-4">
                                 <div className="aspect-square bg-white rounded-lg sm:rounded-xl shadow-sm overflow-hidden">
@@ -175,26 +180,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                         src={product.image}
                                         alt={product.name}
                                         className="w-full h-full object-cover"
+                                        title={product.name}
                                     />
                                 </div>
                             </div>
                         )}
 
-                        {/* Product Info */}
                         <div className="space-y-4 sm:space-y-6">
                             <div>
-                                {/* <div className="flex items-center gap-2 mb-3">
-                                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                                        Featured
-                                    </Badge>
-                                    <div className="flex items-center gap-1">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
-                                        ))}
-                                        <span className="text-sm text-gray-500 ml-1">(4.0) • 24 reviews</span>
-                                    </div>
-                                </div> */}
-
                                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                                     {product.name}
                                 </h1>
@@ -210,56 +203,63 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                 </div>
                             </div>
 
-                            {/* Quantity Selector */}
                             <div className="space-y-3 sm:space-y-4">
                                 <div className="flex items-center gap-3 sm:gap-4">
                                     <span className="font-medium text-gray-900 text-sm sm:text-base">Quantity:</span>
-                                    <div className="flex items-center border border-gray-200 rounded-lg">
+                                    <div className="flex items-center border border-gray-200 rounded-lg" role="group" aria-label="Quantity selector">
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                             className="h-9 w-9 sm:h-10 sm:w-10 p-0"
+                                            aria-label="Decrease quantity"
+                                            title="Decrease quantity"
                                         >
-                                            <Minus className="h-4 w-4" />
+                                            <Minus className="h-4 w-4" aria-hidden="true" />
                                         </Button>
-                                        <span className="w-10 sm:w-12 text-center font-medium text-sm sm:text-base">{quantity}</span>
+                                        <span className="w-10 sm:w-12 text-center font-medium text-sm sm:text-base" aria-live="polite" aria-atomic="true">{quantity}</span>
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setQuantity(quantity + 1)}
                                             className="h-9 w-9 sm:h-10 sm:w-10 p-0"
+                                            aria-label="Increase quantity"
+                                            title="Increase quantity"
                                         >
-                                            <Plus className="h-4 w-4" />
+                                            <Plus className="h-4 w-4" aria-hidden="true" />
                                         </Button>
                                     </div>
                                 </div>
 
-                                {/* Action Buttons */}
                                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                                     <Button
                                         onClick={handleAddToCart}
                                         variant="outline"
                                         size="lg"
-                                        className="flex-1 h-11 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base"
+                                        className={`flex-1 h-11 sm:h-12 border-gray-300 hover:border-gray-400 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        disabled={addToCartLoading.current}
+                                        aria-label={`Add ${quantity} ${product.name}${quantity > 1 ? 's' : ''} to cart`}
+                                        title="Add to cart"
                                     >
-                                        <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                                        Add to cart
+                                        {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />}
+                                        <span className="text-black">Add to cart</span>
                                     </Button>
                                     <Button
                                         onClick={handleBuyNow}
                                         size="lg"
-                                        className="flex-1 h-11 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                                        className={`flex-1 h-11 sm:h-12 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base ${addToCartLoading.current ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        disabled={addToCartLoading.current}
+                                        aria-label={`Buy ${quantity} ${product.name}${quantity > 1 ? 's' : ''} now`}
+                                        title="Buy now"
                                     >
-                                        Buy now
+                                        {addToCartLoading.current ? <Skeleton className="h-4 w-4" /> : <span className="text-white">Buy now</span>}
                                     </Button>
                                 </div>
                             </div>
 
-                            {/* Features */}
-                            <div className="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-lg sm:rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 rounded-lg sm:rounded-xl" role="list" aria-label="Product benefits">
+                                <div className="flex items-center gap-3" role="listitem">
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                                         <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                                     </div>
                                     <div>
@@ -267,8 +267,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                         <div className="text-xs sm:text-sm text-gray-500">On orders above ₹500</div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <div className="flex items-center gap-3" role="listitem">
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                                         <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                                     </div>
                                     <div>
@@ -276,8 +276,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                         <div className="text-xs sm:text-sm text-gray-500">Manufacturer warranty</div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <div className="flex items-center gap-3" role="listitem">
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                                         <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
                                     </div>
                                     <div>
@@ -289,13 +289,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         </div>
                     </div>
 
-                    {/* Product Description and Details */}
                     <div className="mt-8 sm:mt-12 lg:mt-16">
                         <Tabs defaultValue="description" className="w-full">
                             <TabsList className="grid w-full grid-cols-2 bg-gray-100">
                                 <TabsTrigger value="description" className="text-xs sm:text-sm">Description</TabsTrigger>
                                 <TabsTrigger value="specifications" className="text-xs sm:text-sm">Specifications</TabsTrigger>
-                                {/* <TabsTrigger value="reviews" className="text-xs sm:text-sm">Reviews</TabsTrigger> */}
                             </TabsList>
 
                             <TabsContent value="description" className="mt-4 sm:mt-6 lg:mt-8">
@@ -334,19 +332,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     </CardContent>
                                 </Card>
                             </TabsContent>
-
-                            {/* <TabsContent value="reviews" className="mt-4 sm:mt-6 lg:mt-8">
-                                <Card className="border-0 shadow-sm">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg sm:text-xl">Customer Reviews</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-                                            Reviews feature coming soon...
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent> */}
                         </Tabs>
                     </div>
                 </div>
