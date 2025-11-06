@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Shield, Clock, Zap, ArrowRight, DollarSign, Users, Star } from "lucide-react"
+import { Shield, Clock, ArrowRight, Users, Star } from "lucide-react"
 import { APIURL } from "@/utils/env"
 import { useRouter } from "next/navigation"
 
@@ -166,13 +166,12 @@ function ServiceCard({
             target.src = "https://sewamitra.up.gov.in/Upload/Service/ff974f11-4215-4b41-bb63-87f2cb358a46_.jpg"
           }}
         />
-        
+
         {/* Service Status */}
         <div className="absolute top-4 left-4">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
-              service.isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"
-            }`}
+            className={`px-3 py-1 rounded-full text-xs font-medium ${service.isActive ? "bg-green-500 text-white" : "bg-red-500 text-white"
+              }`}
           >
             {service.isActive ? "Available" : "Unavailable"}
           </span>
@@ -208,7 +207,6 @@ function ServiceCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-green-600">
-                <DollarSign className="h-4 w-4 mr-1" />
                 <span className="font-bold text-lg">₹{service.price}</span>
               </div>
               <div className="flex items-center text-gray-500">
