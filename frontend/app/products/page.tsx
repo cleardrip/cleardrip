@@ -139,7 +139,7 @@ export default function ProductsPage() {
                     <span className="xs:hidden">Add</span>
                 </Button>
                 <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9">
-                    <span className="text-white">Buy now</span>
+                    <span className="text-white">View</span>
                 </Button>
             </CardFooter>
         </Card>
