@@ -1,4 +1,3 @@
-// backend/src/controllers/auth.controller.ts
 import { FastifyReply, FastifyRequest } from "fastify"
 import { logger } from "@/lib/logger"
 import { forgotPasswordSchema, resetPasswordSchema, signinSchema, signupSchema, updatePasswordSchema, updateUserSchema, verifyResetTokenSchema } from "@/schemas/auth.schema"
@@ -29,7 +28,7 @@ export const signupHandler = async (req: FastifyRequest, reply: FastifyReply) =>
 
         if (user.email) {
             // Send welcome email using the email queue
-            emailQueue.add(emailQueueName, {
+            emailQueue.add(`welcome-email-${user.id}`, {
                 to: user.email,
                 subject: "Welcome to ClearDrip!",
                 message: `Hello ${user.name}, welcome to ClearDrip!`,

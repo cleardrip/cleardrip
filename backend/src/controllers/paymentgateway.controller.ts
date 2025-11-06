@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/logger"
 import { createRazorpayOrder, verifyRazorpaySignature } from "@/lib/createRazorpayOrder"
 import { createSubscription } from "@/services/subscription.service"
+import { getEmailSubject, getEmailTemplate } from "@/utils/emailTemplates"
+import { emailQueue } from "@/queues/email.queue"
 
 interface Payload {
     paymentFor: "SERVICE" | "PRODUCT" | "SUBSCRIPTION" | "OTHER"
@@ -147,6 +149,7 @@ export const createOrder = async (req: FastifyRequest, reply: FastifyReply) => {
         return reply.code(500).send({ error: "Failed to create order", details })
     }
 }
+
 export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
         const { orderId, paymentId, signature, paymentFor } = req.body as any;
@@ -155,22 +158,25 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
             return reply.code(400).send({ success: false, message: "Missing required fields" });
         }
 
-        // Verify Razorpay signature
         if (!verifyRazorpaySignature(orderId, paymentId, signature)) {
             logger.warn("Razorpay signature verification failed", { orderId, paymentId })
             return reply.code(400).send({ success: false, message: "Invalid payment signature" });
         }
 
-        // Get internal PaymentOrder record
         const paymentOrder = await prisma.paymentOrder.findUnique({
             where: { razorpayOrderId: orderId },
+            include: {
+                user: true,
+                items: {
+                    include: { product: true }
+                }
+            }
         });
 
         if (!paymentOrder) {
             return reply.code(404).send({ success: false, message: "Payment order not found" });
         }
 
-        // Idempotency checks
         const existingSuccess = await prisma.paymentTransaction.findFirst({
             where: { orderId: paymentOrder.id, status: "SUCCESS" }
         })
@@ -185,10 +191,8 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
             return reply.send({ success: true, message: "Payment already recorded", transaction: existingByRzpId })
         }
 
-        // Fetch payment details from Razorpay to validate amount & capture status
         const razorpayPayment = await razorpay.payments.fetch(paymentId);
 
-        // Razorpay returns amount in paise
         const expectedPaise = Math.round(Number(paymentOrder.amount) * 100);
         if (Number(razorpayPayment.amount) !== expectedPaise) {
             logger.error("Payment amount mismatch", { expectedPaise, received: razorpayPayment.amount, orderId, paymentId })
@@ -203,9 +207,25 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
 
         const amountPaid = Number(razorpayPayment.amount) / 100.0;
 
-        // Use a transaction callback so we can perform reads and writes atomically (validate inventory before decrement)
+        // Fetch related data for email templates
+        let serviceDetails = null;
+        let subscriptionDetails = null;
+
+        if (paymentOrder.purpose === "SERVICE_BOOKING" && paymentOrder.bookingId) {
+            serviceDetails = await prisma.serviceBooking.findUnique({
+                where: { id: paymentOrder.bookingId },
+                include: { service: true }
+            });
+        }
+
+        if (paymentOrder.subscriptionId) {
+            subscriptionDetails = await prisma.subscription.findUnique({
+                where: { id: paymentOrder.subscriptionId },
+                include: { plan: true }
+            });
+        }
+
         const transaction = await prisma.$transaction(async (tx) => {
-            // Create transaction record
             const createdTx = await tx.paymentTransaction.create({
                 data: {
                     orderId: paymentOrder.id,
@@ -218,13 +238,11 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
                 },
             });
 
-            // Update payment order status
             await tx.paymentOrder.update({
                 where: { id: paymentOrder.id },
                 data: { status: "SUCCESS" },
             });
 
-            // If subscription payment, activate the subscription
             if (paymentOrder.subscriptionId) {
                 await tx.subscription.update({
                     where: { id: paymentOrder.subscriptionId },
@@ -232,14 +250,12 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
                 });
             }
             else if (paymentOrder.purpose === "SERVICE_BOOKING" && paymentOrder.bookingId) {
-                // Confirm the service booking
                 await tx.serviceBooking.update({
                     where: { id: paymentOrder.bookingId },
                     data: { status: "IN_PROGRESS" },
                 });
             }
             else if (paymentOrder.purpose === "PRODUCT_PURCHASE") {
-                // Deduct product inventory with validation
                 const items = await tx.paymentOrderItem.findMany({
                     where: { orderId: paymentOrder.id }
                 });
@@ -260,11 +276,37 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
                 }
             }
 
-            // return created transaction record for response
             return createdTx;
         });
 
-        // Return success response
+        // Queue email with detailed information
+        const emailSubject = getEmailSubject(paymentOrder.purpose);
+        const emailHtml = getEmailTemplate(
+            paymentOrder.purpose,
+            paymentOrder.user?.name || "User",
+            paymentOrder,
+            paymentOrder.items || [],
+            serviceDetails,
+            subscriptionDetails,
+            amountPaid
+        );
+        
+        try {
+            await emailQueue.add(`payment-confirmation-${paymentOrder.id}`, {
+                to: paymentOrder.user?.email,
+                subject: emailSubject,
+                message: `Payment of ₹${amountPaid} confirmed`,
+                html: emailHtml
+            }, {
+                jobId: `payment-${paymentOrder.id}-${Date.now()}`,
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 1000 }
+            });
+            logger.info(`Payment confirmation email queued for ${paymentOrder.id}`);
+        } catch (emailQueueError) {
+            logger.error("Failed to queue payment confirmation email", emailQueueError);
+        }
+
         return reply.send({ success: true, message: "Payment verified", transaction });
     } catch (err) {
         logger.error(err);
@@ -272,6 +314,7 @@ export const verifyPayment = async (req: FastifyRequest, reply: FastifyReply) =>
         return reply.code(500).send({ error: "Payment verification failed", details });
     }
 }
+
 
 export const cancelPayment = async (req: FastifyRequest, reply: FastifyReply) => {
     const { orderId } = req.body as any
