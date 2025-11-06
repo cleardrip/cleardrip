@@ -8,7 +8,6 @@ import OurServices from '@/components/homepage/our-services';
 import HeroSection from '@/components/homepage/hero-section';
 import AboutSection from '@/components/homepage/about-section';
 import FAQSection from '@/components/homepage/faq-section';
-import PricingSection from '@/components/homepage/pricing-section';
 import ContactSection from '@/components/homepage/contact-section';
 import SubscriptionsSection from '@/components/core/Subscriptions';
 
