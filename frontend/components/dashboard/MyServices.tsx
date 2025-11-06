@@ -338,7 +338,7 @@ export default function MyServices() {
         const isPendingOrScheduled = ['pending', 'scheduled'].includes(selectedService.status.toLowerCase());
 
         return (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                 <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
                     <CardHeader>
                         <div className="flex justify-between items-start">
@@ -458,15 +458,45 @@ export default function MyServices() {
         );
     };
 
+    // Lock/unlock body scroll when modals are open
+    useEffect(() => {
+        const isAnyModalOpen = showRescheduleModal || showCancelModal || selectedService !== null;
+
+        if (isAnyModalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [showRescheduleModal, showCancelModal, selectedService]);
+
     if (!authenticated) {
         return <UnauthorizedAccess />;
     }
 
     const filteredServices = getFilteredAndSortedServices();
+    const clearSearchQuery = () => {
+        setSearchQuery('');
+    };
+
+    const clearStatusFilter = () => {
+        setStatusFilter('all');
+    };
+
+    const clearAllFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('all');
+        setSortBy('newest');
+    };
+
+    const hasActiveFilters = searchQuery.trim() !== '' || statusFilter !== 'all';
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="container mx-auto px-4 py-8">
+            <div className={`container mx-auto px-4 py-8 ${(showRescheduleModal || showCancelModal || selectedService) ? 'blur-sm' : ''}`}>
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 space-y-4 lg:space-y-0">
                     <div>
@@ -612,6 +642,49 @@ export default function MyServices() {
                                 </div>
                             </div>
 
+                            {/* Active Filters Display */}
+                            {hasActiveFilters && (
+                                <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+                                    <span className="text-xs sm:text-sm text-gray-600 font-medium">Active filters:</span>
+
+                                    {searchQuery.trim() !== '' && (
+                                        <Badge variant="secondary" className="flex items-center gap-1 px-2 py-1">
+                                            <Search className="w-3 h-3" />
+                                            <span className="text-xs max-w-[150px] truncate">{searchQuery}</span>
+                                            <button
+                                                onClick={clearSearchQuery}
+                                                className="ml-1 hover:bg-gray-300 rounded-full p-0.5 transition-colors"
+                                                aria-label="Clear search"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </Badge>
+                                    )}
+
+                                    {statusFilter !== 'all' && (
+                                        <Badge variant="secondary" className="flex items-center gap-1 px-2 py-1">
+                                            <span className="text-xs capitalize">{statusFilter.replace('_', ' ')}</span>
+                                            <button
+                                                onClick={clearStatusFilter}
+                                                className="ml-1 hover:bg-gray-300 rounded-full p-0.5 transition-colors"
+                                                aria-label="Clear status filter"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </Badge>
+                                    )}
+
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={clearAllFilters}
+                                        className="text-xs h-6 px-2"
+                                    >
+                                        Clear all
+                                    </Button>
+                                </div>
+                            )}
+
                             {/* Results Count */}
                             <div className="text-xs sm:text-sm text-gray-600">
                                 Showing {filteredServices.length} of {data?.pagination.total || 0} services
@@ -745,10 +818,7 @@ export default function MyServices() {
                             ) : (
                                 <Button
                                     variant="outline"
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setStatusFilter('all');
-                                    }}
+                                    onClick={clearAllFilters}
                                 >
                                     Clear Filters
                                 </Button>
@@ -792,27 +862,29 @@ export default function MyServices() {
             </div>
             {selectedService && <ServiceDetailModal />}
 
-            <RescheduleModal
-                isOpen={showRescheduleModal}
-                onClose={() => {
-                    setShowRescheduleModal(false);
-                    setSelectedBookingForAction(null);
-                }}
-                booking={selectedBookingForAction}
-                availableSlots={availableSlots}
-                onSuccess={fetchServices}
-                onReschedule={handleReschedule}
-            />
-            <CancelModal
-                isOpen={showCancelModal}
-                onClose={() => {
-                    setShowCancelModal(false);
-                    setSelectedBookingForAction(null);
-                }}
-                booking={selectedBookingForAction}
-                onSuccess={fetchServices}
-                onCancel={handleCancel}
-            />
+            <div className={showRescheduleModal || showCancelModal ? '' : 'hidden'}>
+                <RescheduleModal
+                    isOpen={showRescheduleModal}
+                    onClose={() => {
+                        setShowRescheduleModal(false);
+                        setSelectedBookingForAction(null);
+                    }}
+                    booking={selectedBookingForAction}
+                    availableSlots={availableSlots}
+                    onSuccess={fetchServices}
+                    onReschedule={handleReschedule}
+                />
+                <CancelModal
+                    isOpen={showCancelModal}
+                    onClose={() => {
+                        setShowCancelModal(false);
+                        setSelectedBookingForAction(null);
+                    }}
+                    booking={selectedBookingForAction}
+                    onSuccess={fetchServices}
+                    onCancel={handleCancel}
+                />
+            </div>
         </div>
     );
 }
