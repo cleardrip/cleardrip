@@ -82,20 +82,20 @@ export default function PricingSection() {
   };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+    <section className="py-12 sm:py-16 lg:py-24 px-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-blue-600 text-white shadow-lg">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-blue-100 text-blue-800 border border-blue-200 shadow-lg">
             <Sparkles className="w-4 h-4" />
             Simple Pricing
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-white">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-blue-900">
             Choose your plan.
             <br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">We'll handle the rest</span>
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">We'll handle the rest</span>
           </h2>
-          <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-slate-300">
+          <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed text-gray-700">
             Transparent pricing with no hidden fees. Choose the plan that fits your needs.
           </p>
         </div>
@@ -171,18 +171,16 @@ export default function PricingSection() {
                   })}
                 </div>
 
-                {plans.length > 3 && (
-                  <div className="mt-8 text-center">
-                    <Button
-                      onClick={() => router.push('/subscriptions')}
-                      size="lg"
-                      className="rounded-full px-10 py-6 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300"
-                    >
-                      View All Plans
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </div>
-                )}
+                <div className="mt-8 text-center">
+                  <Button
+                    onClick={() => router.push('/subscriptions')}
+                    size="lg"
+                    className="rounded-full px-10 py-6 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                  >
+                    View All Plans
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
               </>
             )}
           </div>
@@ -190,18 +188,18 @@ export default function PricingSection() {
 
         {/* Bottom CTA */}
         <div className="mt-16 lg:mt-20 text-center">
-          <div className="rounded-2xl p-8 max-w-4xl mx-auto bg-slate-800/50 backdrop-blur-sm border border-slate-700 shadow-xl">
-            <h3 className="text-2xl font-bold mb-4 text-white">
+          <div className="rounded-2xl p-8 max-w-4xl mx-auto bg-white border border-gray-200 shadow-xl">
+            <h3 className="text-2xl font-bold mb-4 text-gray-900">
               Still have questions?
             </h3>
-            <p className="mb-6 text-lg text-slate-300">
+            <p className="mb-6 text-lg text-gray-700">
               Our team is here to help you choose the right plan for your needs
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-8 py-6 text-lg border-2 cursor-pointer border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-semibold transition-all duration-300"
+                className="rounded-full px-8 py-6 text-lg border-2 cursor-pointer border-blue-600 text-blue-600 hover:bg-blue-50 hover:border-blue-700 font-semibold transition-all duration-300"
                 onClick={() => {
                   router.push('/contact')
                 }}
@@ -211,7 +209,7 @@ export default function PricingSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-8 py-6 text-lg cursor-pointer border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-600 font-semibold transition-all duration-300"
+                className="rounded-full px-8 py-6 text-lg cursor-pointer border-gray-600 text-gray-700 hover:bg-gray-50 hover:border-gray-700 font-semibold transition-all duration-300"
                 onClick={handleViewFAQ}
               >
                 View FAQ
@@ -238,9 +236,9 @@ function PricingCard({
 }) {
   return (
     <div
-      className={`relative bg-slate-800/80 backdrop-blur-sm rounded-3xl p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 group ${plan.popular
-        ? 'ring-4 ring-blue-500/50 scale-105 border-blue-500'
-        : 'border-slate-700 hover:border-slate-600'
+      className={`relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 group ${plan.popular
+        ? 'ring-4 ring-blue-500 scale-105 border-blue-500'
+        : 'border-gray-200 hover:border-blue-400'
         }`}
       style={{
         animationDelay: `${index * 200}ms`,
@@ -250,7 +248,7 @@ function PricingCard({
       {/* Popular Badge */}
       {plan.popular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-xl flex items-center gap-2">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-xl flex items-center gap-2">
             <Star className="w-4 h-4 fill-current" />
             Most Popular
           </div>
@@ -259,22 +257,22 @@ function PricingCard({
 
       {/* Savings Badge */}
       {plan.savings && (
-        <div className="absolute -top-2 -right-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold transform rotate-12 shadow-lg z-10">
+        <div className="absolute -top-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold transform rotate-12 shadow-lg z-10">
           {plan.savings}
         </div>
       )}
 
       {/* Plan Header */}
       <div className="text-center mb-8">
-        <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg ${plan.popular ? 'bg-gradient-to-br from-blue-600 to-indigo-600' : 'bg-gradient-to-br from-slate-700 to-slate-600'
+        <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg ${plan.popular ? 'bg-blue-600' : 'bg-gray-800'
           }`}>
           <IconComponent className="w-8 h-8 text-white" />
         </div>
 
-        <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-white">
+        <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-gray-900">
           {plan.name}
         </h3>
-        <p className="text-base lg:text-lg text-slate-300">
+        <p className="text-base lg:text-lg text-gray-600">
           {plan.description}
         </p>
       </div>
@@ -282,11 +280,11 @@ function PricingCard({
       {/* Price Display */}
       <div className="text-center mb-8">
         <div className="flex items-baseline justify-center gap-2 mb-2">
-          <span className="text-3xl lg:text-4xl font-bold text-white">₹{plan.price}</span>
-          <span className="text-lg text-slate-400">/ {plan.period} days</span>
+          <span className="text-3xl lg:text-4xl font-bold text-gray-900">₹{plan.price}</span>
+          <span className="text-lg text-gray-600">/ {plan.period} days</span>
         </div>
         {plan.period === "Lifetime" && (
-          <p className="text-sm text-emerald-400 font-medium">One-time payment</p>
+          <p className="text-sm text-green-600 font-medium">One-time payment</p>
         )}
       </div>
 
@@ -294,11 +292,11 @@ function PricingCard({
       <ul className="space-y-4 mb-8">
         {plan.features.map((feature, idx) => (
           <li key={idx} className="flex items-start gap-3">
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 ${plan.popular ? 'bg-blue-500' : 'bg-slate-600'
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 ${plan.popular ? 'bg-blue-100' : 'bg-gray-100'
               }`}>
-              <Check className={`w-3 h-3 text-white`} />
+              <Check className={`w-3 h-3 ${plan.popular ? 'text-blue-600' : 'text-gray-700'}`} />
             </div>
-            <span className="leading-relaxed text-slate-200">{feature}</span>
+            <span className="leading-relaxed text-gray-800">{feature}</span>
           </li>
         ))}
       </ul>
@@ -307,8 +305,8 @@ function PricingCard({
       <Button
         onClick={onSubscribe}
         className={`w-full py-6 text-lg font-semibold rounded-2xl transition-all duration-300 group text-white shadow-lg hover:shadow-xl ${plan.popular
-          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
-          : 'bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500'
+          ? 'bg-blue-600 hover:bg-blue-700'
+          : 'bg-gray-800 hover:bg-gray-900'
           }`}
       >
         {plan.buttonText}
@@ -317,7 +315,7 @@ function PricingCard({
 
       {/* Value Proposition */}
       <div className="mt-6 text-center">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-gray-600">
           {plan.period === "Lifetime" ? "Never worry about RO maintenance again" : "Cancel anytime, no questions asked"}
         </p>
       </div>
