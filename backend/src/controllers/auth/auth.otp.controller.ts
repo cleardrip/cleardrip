@@ -13,8 +13,9 @@ export const requestOtpHandler = async (req: FastifyRequest, reply: FastifyReply
         const { phone, email } = body.data;
         if (!phone && !email) return sendError(reply, 400, "Email or Phone is required to send otp.");
 
-        const isSuccess = await generateAndSendOtp(phone, email);
-        if (isSuccess) return reply.code(200).send({ message: "OTP sent successfully" });
+        const { channel, status } = await generateAndSendOtp(phone, email);
+        console.log("\n\nOTP send status:", status, "via", channel);
+        if (status === "pending") return reply.code(200).send({ message: "OTP sent successfully", channel });
         else return sendError(reply, 500, "Failed to send OTP");
     } catch (error) {
         logger.error(error, "Request OTP error")
@@ -31,8 +32,8 @@ export const verifyOtpHandler = async (req: FastifyRequest, reply: FastifyReply)
         const { phone, email, otp } = body.data;
         if (!phone && !email) return sendError(reply, 2456, "Email or Phone is required to verify otp.");
 
-        const isSuccess = await verifyOtp(otp, phone, email);
-        if (isSuccess) return reply.code(200).send({ message: "OTP verified successfully" });
+        const { message, success } = await verifyOtp(otp, phone, email);
+        if (success) return reply.code(200).send({ message });
         else return sendError(reply, 500, "Failed to verify OTP");
     } catch (error) {
         logger.error(error, "Verify OTP error")

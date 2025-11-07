@@ -11,6 +11,7 @@ import { SignupData } from '@/lib/types/auth/userAuth';
 import { AuthService } from '@/lib/httpClient/userAuth';
 import { Input } from '@/components/core/Input';
 import { Button } from '@/components/core/Button';
+import { toast } from 'sonner';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState<SignupData>({
@@ -34,7 +35,7 @@ export default function SignupPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith('address.')) {
       const addressField = name.split('.')[1];
       setFormData(prev => ({
@@ -47,7 +48,7 @@ export default function SignupPage() {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -108,7 +109,7 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -116,15 +117,19 @@ export default function SignupPage() {
 
     try {
       await AuthService.signup(formData);
-      setAlert({ type: 'success', message: 'Account created successfully! Redirecting...' });
-      
+      setAlert({ type: 'success', message: 'Account created successfully! Redirecting to verification...' });
+
       setTimeout(() => {
-        window.location.href = '/user/dashboard';
+        router.push(`/user/signup/verify?phone=${formData.phone}&email=${formData.email}`)
       }, 1500);
     } catch (error) {
-      setAlert({ 
-        type: 'error', 
-        message: error instanceof Error ? error.message : 'Signup failed' 
+      toast.error('Error in Signup', {
+        description: error instanceof Error ? error.message : "Signup Failed",
+        action: { label: 'Close', onClick: () => toast.dismiss() }
+      })
+      setAlert({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Signup failed'
       });
     } finally {
       setIsLoading(false);
@@ -145,7 +150,7 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           {alert && (
-            <Alert className={`mb-6 ${alert.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
+            <Alert className={`mb-6 ${alert.type === 'error' ? 'border-red-500 bg-red-50 text-red-800' : 'border-green-500 bg-green-50 text-green-800'}`}>
               {alert.type === 'error' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
               <AlertDescription>{alert.message}</AlertDescription>
             </Alert>
@@ -230,7 +235,7 @@ export default function SignupPage() {
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Address Information<span className="text-black-500">*</span></h3>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="address.street">Street Address<span className="text-black-500">*</span></Label>
                 <Input
@@ -311,7 +316,14 @@ export default function SignupPage() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Creating Account...
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </Button>
           </form>
         </CardContent>

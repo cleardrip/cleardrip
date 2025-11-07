@@ -247,8 +247,9 @@ enum WhatsAppMessageType {
 
 model OTPSession {
   id        String     @id @default(uuid())
-  user      User       @relation(fields: [userId], references: [id])
+  user      User?       @relation(fields: [userId], references: [id])
   userId    String
+  email String
   otpCode   String
   channel   OTPChannel
   expiresAt DateTime

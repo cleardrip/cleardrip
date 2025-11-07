@@ -3,7 +3,40 @@ import { AuthResponse, SigninData, SignupData } from "../types/auth/userAuth";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export class AuthService {
-  
+  static async sendOtp(phone?: string, email?: string): Promise<{ status: string; channel: string }> {
+    if (!phone && !email) {
+      throw new Error("Either phone or email must be provided");
+    }
+    const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ phone, email }),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to send OTP');
+    }
+    return result;
+  }
+
+  static async verifyOtp(phoneOtp?: string, emailOtp?: string, phone?: string, email?: string): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ phoneOtp, emailOtp, phone, email }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'OTP verification failed');
+    }
+    return result;
+  }
+
   static async signup(data: SignupData): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',

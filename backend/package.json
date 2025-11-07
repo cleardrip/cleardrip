@@ -35,7 +35,7 @@
     "razorpay": "^2.9.6",
     "tailwind": "^4.0.0",
     "tsconfig-paths": "^4.2.0",
-    "twilio": "^5.9.0",
+    "twilio": "^5.10.4",
     "zod": "^4.0.5"
   },
   "devDependencies": {

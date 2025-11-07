@@ -11,7 +11,6 @@ export const initWorkers = () => {
     });
 
     notificationWorker.on('error', (err) => {
-        console.error('Email worker error:', err);
         logger.error('Email worker error:', err);
     });
 

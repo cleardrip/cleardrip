@@ -64,7 +64,7 @@ notificationWorker.on('failed', (job, err) => {
 });
 
 notificationWorker.on('error', (err) => {
-    console.error('Worker error:', err);
+    // console.error('Worker error:', err);
 });
 
 notificationWorker.on('stalled', (jobId) => {

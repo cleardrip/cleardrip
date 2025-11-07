@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma"
 import { SignupInput } from "../schemas/auth.schema"
 import { hashPassword } from "../utils/hash"
+import { generateAndSendOtp } from "./otp.service";
 
 export async function findUserByEmailOrPhone(email?: string, phone?: string, role: string = "USER") {
     if (!email && !phone) {
@@ -15,7 +16,7 @@ export async function findUserByEmailOrPhone(email?: string, phone?: string, rol
                 ]
             },
             include: {
-                address:true
+                address: true
             }
         })
     }
@@ -42,11 +43,15 @@ export async function createUser(data: SignupInput) {
                 email: data.email,
                 phone: data.phone,
                 password: hashedPassword,
-                addressId: address.id
+                addressId: address.id,
+                isEmailVerified: false,
+                isPhoneVerified: false
             },
             include: { address: true }
         })
     })
+    generateAndSendOtp(data.phone)
+    generateAndSendOtp(data.email)
     return result
 }
 
