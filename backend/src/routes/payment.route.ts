@@ -1,4 +1,4 @@
-import { fetchUserPayments, fetchUserPaymentsSummary, fetchRecentTransactions, fetchActiveSubscription, fetchPendingOrders, fetchUpcomingBookings } from "@/controllers/payment.controller"
+import { fetchUserPayments, fetchUserPaymentsSummary, fetchRecentTransactions, fetchActiveSubscription, fetchPendingOrders, fetchUpcomingBookings, fetchAllPayments } from "@/controllers/payment.controller"
 import { cancelPayment, createOrder, verifyPayment } from "@/controllers/paymentgateway.controller"
 import { requireRole } from "@/middleware/requireRole"
 import { FastifyInstance } from "fastify"
@@ -21,4 +21,6 @@ export default async function paymentRoutes(fastify: FastifyInstance) {
     fastify.get("/user/dashboard/orders/pending", { preHandler: requireRole(['USER']) }, fetchPendingOrders)
 
     fastify.get("/user/dashboard/bookings/upcoming", { preHandler: requireRole(['USER']) }, fetchUpcomingBookings)
+
+    fastify.get("/admin/payments", { preHandler: requireRole(['ADMIN', 'SUPER_ADMIN']) }, fetchAllPayments)
 }

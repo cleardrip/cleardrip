@@ -7,6 +7,7 @@ import {
     getActiveSubscription,
     getPendingOrders,
     getUpcomingBookings,
+    getAllPayments,
 } from "@/services/payment.service";
 import { sendError } from "@/utils/errorResponse";
 import { parsePagination } from "@/utils/parsePagination";
@@ -90,3 +91,20 @@ export const fetchUpcomingBookings = async (req: FastifyRequest, res: FastifyRep
         return sendError(res, 500, "Internal Server Error");
     }
 };
+
+export const fetchAllPayments = async (req: FastifyRequest, res: FastifyReply) => {
+    try {
+        const { take, skip } = parsePagination(req.query)
+        const search = ((req.query as any)?.search as string | undefined)?.trim() || undefined
+        const status = ((req.query as any)?.status as string | undefined)?.trim() || undefined
+        const purpose = ((req.query as any)?.purpose as string | undefined)?.trim() || undefined
+
+        const { payments, total } = await getAllPayments(take, skip, search, status, purpose)
+        const page = take && take > 0 ? Math.floor((skip || 0) / take) + 1 : 1
+
+        return res.send({ payments, total, page, limit: take ?? null })
+    } catch (error) {
+        console.error("Error fetching all payments:", error)
+        return sendError(res, 500, "Internal Server Error")
+    }
+}

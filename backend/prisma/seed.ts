@@ -562,44 +562,44 @@ async function main() {
     ]);
 
     // Create OTP sessions
-    const otpSessions = await Promise.all([
-        prisma.oTPSession.create({
-            data: {
-                userId: users[0].id,
-                otpCode: '123456',
-                channel: 'EMAIL',
-                expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
-                verified: true
-            }
-        }),
-        prisma.oTPSession.create({
-            data: {
-                userId: users[1].id,
-                otpCode: '789012',
-                channel: 'PHONE',
-                expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
-                verified: false
-            }
-        }),
-        prisma.oTPSession.create({
-            data: {
-                userId: users[2].id,
-                otpCode: '345678',
-                channel: 'EMAIL',
-                expiresAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago (expired)
-                verified: false
-            }
-        }),
-        prisma.oTPSession.create({
-            data: {
-                userId: users[3].id,
-                otpCode: '901234',
-                channel: 'PHONE',
-                expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
-                verified: true
-            }
-        })
-    ]);
+    // const otpSessions = await Promise.all([
+    //     prisma.oTPSession.create({
+    //         data: {
+    //             userId: users[0].id,
+    //             otpCode: '123456',
+    //             channel: 'EMAIL',
+    //             expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
+    //             verified: true
+    //         }
+    //     }),
+    //     prisma.oTPSession.create({
+    //         data: {
+    //             userId: users[1].id,
+    //             otpCode: '789012',
+    //             channel: 'PHONE',
+    //             expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
+    //             verified: false
+    //         }
+    //     }),
+    //     prisma.oTPSession.create({
+    //         data: {
+    //             userId: users[2].id,
+    //             otpCode: '345678',
+    //             channel: 'EMAIL',
+    //             expiresAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago (expired)
+    //             verified: false
+    //         }
+    //     }),
+    //     prisma.oTPSession.create({
+    //         data: {
+    //             userId: users[3].id,
+    //             otpCode: '901234',
+    //             channel: 'PHONE',
+    //             expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
+    //             verified: true
+    //         }
+    //     })
+    // ]);
 
     console.log('Database seeding completed successfully!');
     console.log(`Created ${users.length} users`);
@@ -610,7 +610,7 @@ async function main() {
     console.log(`Created ${tdsLogs.length} TDS logs`);
     console.log(`Created ${notifications.length} notifications`);
     console.log(`Created ${whatsappLogs.length} WhatsApp logs`);
-    console.log(`Created ${otpSessions.length} OTP sessions`);
+    // console.log(`Created ${otpSessions.length} OTP sessions`);
     console.log(`Created ${addresses.length} addresses`);
 }
 

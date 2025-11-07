@@ -228,3 +228,124 @@ export async function getUpcomingBookings(userId: string, take = 5) {
         createdAt: b.createdAt,
     }));
 }
+
+export const getAllPayments = async (
+    take: number = 10,
+    skip: number = 0,
+    search?: string,
+    status?: string,
+    purpose?: string
+) => {
+    try {
+        const payments = await prisma.paymentOrder.findMany({
+            where: {
+                ...(search && {
+                    OR: [
+                        { razorpayOrderId: { contains: search, mode: "insensitive" } },
+                        { user: { name: { contains: search, mode: "insensitive" } } },
+                        { user: { email: { contains: search, mode: "insensitive" } } },
+                        { user: { phone: { contains: search, mode: "insensitive" } } },
+                    ],
+                }),
+                ...(status && { status: status as any }),
+                ...(purpose && { purpose: purpose as any }),
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        address: {
+                            select: {
+                                street: true,
+                                city: true,
+                                state: true,
+                                postalCode: true,
+                                country: true,
+                            },
+                        },
+                    },
+                },
+                transaction: {
+                    select: {
+                        id: true,
+                        razorpayPaymentId: true,
+                        status: true,
+                        method: true,
+                        amountPaid: true,
+                        capturedAt: true,
+                        errorReason: true,
+                    },
+                },
+                booking: {
+                    select: {
+                        id: true,
+                        status: true,
+                        service: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                            },
+                        },
+                    },
+                },
+                subscription: {
+                    select: {
+                        id: true,
+                        plan: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                            },
+                        },
+                        startDate: true,
+                        endDate: true,
+                        status: true,
+                    },
+                },
+                items: {
+                    select: {
+                        id: true,
+                        product: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                            },
+                        },
+                        quantity: true,
+                        price: true,
+                        subtotal: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+            take,
+            skip,
+        })
+
+        const total = await prisma.paymentOrder.count({
+            where: {
+                ...(search && {
+                    OR: [
+                        { razorpayOrderId: { contains: search, mode: "insensitive" } },
+                        { user: { name: { contains: search, mode: "insensitive" } } },
+                        { user: { email: { contains: search, mode: "insensitive" } } },
+                        { user: { phone: { contains: search, mode: "insensitive" } } },
+                    ],
+                }),
+                ...(status && { status: status as any }),
+                ...(purpose && { purpose: purpose as any }),
+            },
+        })
+
+        return { payments, total }
+    } catch (error) {
+        console.error("Error fetching all payments:", error)
+        throw error
+    }
+}

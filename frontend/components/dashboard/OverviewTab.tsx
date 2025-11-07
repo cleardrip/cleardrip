@@ -432,7 +432,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ user }) => {
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError("Failed to load dashboard data. Please try again.");
-        toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }

@@ -9,6 +9,8 @@ import {
     User,
     Package,
     CalendarCheck,
+    Mail,
+    FileText,
 } from 'lucide-react';
 
 import {
@@ -108,13 +110,23 @@ export function AppSidebar() {
                 title: 'Manage Bookings',
                 url: '/admin/dashboard/services/booked',
                 icon: CalendarCheck,
-            }
+            },
+            {
+                title: "View Contact Messages",
+                url: "/admin/dashboard/contacts",
+                icon: Mail,
+            },
         ];
 
         // Only show additional items for superadmin
         if (role === "SUPER_ADMIN" || isSuperAdmin) {
             return [
                 ...baseItems,
+                {
+                    title: 'View Payments',
+                    url: '/admin/dashboard/payments',
+                    icon: FileText,
+                },
                 {
                     title: 'Manage Products',
                     url: '/admin/dashboard/products',

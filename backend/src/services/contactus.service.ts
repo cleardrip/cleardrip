@@ -34,3 +34,23 @@ export const createContact = async (contactData: contactData) => {
     });
     return newContact;
 };
+
+export const deleteContactService = async (id: string) => {
+    if (!id) {
+        throw new Error("Contact ID is required");
+    }
+
+    const existingContact = await prisma.contactMessage.findUnique({
+        where: { id },
+    });
+
+    if (!existingContact) {
+        throw new Error(`Contact with id ${id} does not exist`);
+    }
+
+    const deletedContact = await prisma.contactMessage.delete({
+        where: { id },
+    });
+
+    return deletedContact;
+};

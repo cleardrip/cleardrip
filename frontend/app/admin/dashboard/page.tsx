@@ -14,6 +14,7 @@ import {
   MessageSquare,
   User,
   TrendingUp,
+  Mail,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { toast } from "sonner"
@@ -91,7 +92,12 @@ const AdminDashboard = () => {
           title: "Manage Subscriptions",
           url: "/admin/dashboard/subscriptions",
           icon: CalendarCheck,
-        }
+        },
+        {
+          title: "View Contact Messages",
+          url: "/admin/dashboard/contacts",
+          icon: Mail,
+        },
       ]
     } else if (role === "ADMIN" || isAdmin) {
       return [
@@ -99,7 +105,12 @@ const AdminDashboard = () => {
           title: "Manage Services and Slots",
           url: "/admin/dashboard/services",
           icon: MessageSquare,
-        }
+        },
+        {
+          title: "View Contact Messages",
+          url: "/admin/dashboard/contacts",
+          icon: Mail,
+        },
       ]
     }
     return []
@@ -108,7 +119,6 @@ const AdminDashboard = () => {
   const QuickLinks = getQuickLinks()
 
   useEffect(() => {
-    // Only fetch stats if user has admin access
     if (hasAdminAccess()) {
       const fetchDashboardStats = async () => {
         try {

@@ -19,9 +19,9 @@ const NAV_ITEMS = [
   { id: 'services', label: 'My Services', icon: FileText },
   { id: 'tds', label: 'Water TDS', icon: Droplet },
   { id: 'bills', label: 'Billing', icon: FileText },
-  { id: 'alerts', label: 'Alerts', icon: Bell },
+  // { id: 'alerts', label: 'Alerts', icon: Bell },
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'settings', label: 'Settings', icon: Settings }
+  { id: 'settings', label: 'Support', icon: Settings }
 ] as const;
 
 type ViewType = typeof NAV_ITEMS[number]['id'];
@@ -86,8 +86,8 @@ const ClearDripDashboard = () => {
         return <Card><CardHeader><CardTitle>Water TDS</CardTitle></CardHeader><CardContent><p>Live water TDS.</p></CardContent></Card>;
       case 'bills':
         return <Payment />
-      case 'alerts':
-        return <Card><CardHeader><CardTitle>Alerts</CardTitle></CardHeader><CardContent><p>Active alerts and notifications.</p></CardContent></Card>;
+      // case 'alerts':
+      //   return <Card><CardHeader><CardTitle>Alerts</CardTitle></CardHeader><CardContent><p>Active alerts and notifications.</p></CardContent></Card>;
       case 'profile':
         return <ProfileComponent />
       case 'settings':

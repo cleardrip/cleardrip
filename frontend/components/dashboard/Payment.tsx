@@ -1,6 +1,6 @@
 "use client";
 import { APIURL } from '@/utils/env';
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED" | "CANCELLED";
 type PaymentPurpose = "SERVICE_BOOKING" | "SUBSCRIPTION" | "PRODUCT_PURCHASE" | "OTHER";
@@ -118,17 +118,17 @@ interface Payment {
 }
 
 const Payment = () => {
-    const [paymentData, setPaymentData] = React.useState<Payment[] | null>(null);
-    const [loading, setLoading] = React.useState<boolean>(true);
-    const [error, setError] = React.useState<Error | null>(null);
-    const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
-    const [page, setPage] = React.useState<number>(1);
-    const [limit, setLimit] = React.useState<number>(10);
-    const [search, setSearch] = React.useState<string>('');
-    const [debouncedSearch, setDebouncedSearch] = React.useState<string>('');
-    const [total, setTotal] = React.useState<number | null>(null);
+    const [paymentData, setPaymentData] = useState<Payment[] | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<Error | null>(null);
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    const [page, setPage] = useState<number>(1);
+    const [limit, setLimit] = useState<number>(10);
+    const [search, setSearch] = useState<string>('');
+    const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+    const [total, setTotal] = useState<number | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const t = setTimeout(() => {
             setDebouncedSearch(search.trim());
             setPage(1);
@@ -136,7 +136,7 @@ const Payment = () => {
         return () => clearTimeout(t);
     }, [search]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         let mounted = true;
         const fetchPaymentData = async () => {
             setLoading(true);
