@@ -1,16 +1,14 @@
 import { Job, Worker } from "bullmq";
 import { logger } from "@/lib/logger";
-import { redisConnection } from "@/config/queue";
+import { getRedisConnection } from "@/lib/redis";
 import { emailQueueName } from "@/queues/email.queue";
 import { sendEmail } from "@/lib/email/sendEmail";
 import { prisma } from "@/lib/prisma";
 
-export const notificationWorkerName = "emailWorker";
-
-export const notificationWorker = new Worker(
+export const emailWorker = new Worker(
     emailQueueName,
     async (job: Job) => {
-        console.log(`\n📧 Processing email job: ${job.id}`);
+        console.log(`Processing email job: ${job.id}`);
         logger.info(`Processing email job: ${job.id}`);
         
         try {
@@ -20,14 +18,12 @@ export const notificationWorker = new Worker(
                 throw new Error("Invalid job data: to, subject, and message are required");
             }
 
-            // Send the email
             const result = await sendEmail(to, subject, message, html || message);
             
             if (result.error) {
                 throw new Error(`Email sending failed: ${result.error}`);
             }
 
-            // Update notification status in DB
             if (job.data.notificationId) {
                 await prisma.notification.update({
                     where: { id: job.data.notificationId },
@@ -39,34 +35,26 @@ export const notificationWorker = new Worker(
             }
 
             console.log(`Email sent successfully to ${to}`);
-            logger.info(`Email sent successfully to ${to}`);
-            
             return { success: true, message: "Email sent successfully" };
         } catch (error: any) {
             console.error(`Error processing email job:`, error);
-            logger.error(`Error processing email job: ${error.message}`);
             throw error;
         }
     },
     {
-        connection: redisConnection,
+        connection: getRedisConnection(),
         concurrency: 5,
     }
 );
 
-// Worker event listeners for monitoring
-notificationWorker.on('completed', (job) => {
-    console.log(` Job ${job.id} completed successfully`);
+emailWorker.on('completed', (job) => {
+    console.log(`Job ${job.id} completed`);
 });
 
-notificationWorker.on('failed', (job, err) => {
-    console.error(`Job ${job?.id} failed with error: ${err.message}`);
+emailWorker.on('failed', (job, err) => {
+    console.error(`Job ${job?.id} failed: ${err.message}`);
 });
 
-notificationWorker.on('error', (err) => {
-    // console.error('Worker error:', err);
-});
-
-notificationWorker.on('stalled', (jobId) => {
-    console.warn(`Job ${jobId} has stalled`);
-});
+emailWorker.on('error', (err) => {
+    console.error('Worker error:', err);
+})

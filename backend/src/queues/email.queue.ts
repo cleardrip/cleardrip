@@ -1,9 +1,10 @@
 import { Queue } from "bullmq";
-import { redisConnection, defaultQueueOptions } from "@/config/queue";
+import { getRedisConnection } from "@/lib/redis";
+import { defaultQueueOptions } from "@/config/queue";
 
 export const emailQueueName = "emailQueue";
 
 export const emailQueue = new Queue(emailQueueName, {
-    connection: redisConnection,
+    connection: getRedisConnection(),
     defaultJobOptions: defaultQueueOptions,
 });

@@ -1,26 +1,16 @@
-import { ConnectionOptions, DefaultJobOptions } from 'bullmq';
-import { REDIS_HOST, REDIS_PORT, REDIS_URL } from './env';
-
-export const redisConnection: ConnectionOptions = {
-    host: REDIS_HOST,
-    port: REDIS_PORT,
-    password: REDIS_URL.split('@')[0].split(':').pop(), 
-    tls: {}, // Required for Upstash Redis
-    maxRetriesPerRequest: null, // Recommended for BullMQ
-    enableReadyCheck: false,
-}
+import { DefaultJobOptions } from 'bullmq';
 
 export const defaultQueueOptions: DefaultJobOptions = {
     removeOnComplete: {
-        age: 60 * 60, // Remove completed jobs after 1 hour
-        count: 100, // Keep the last 100 completed jobs
+        age: 60 * 60,
+        count: 100,
     },
-    attempts: 3, // Retry failed jobs up to 3 times
+    attempts: 3,
     backoff: {
-        type: 'exponential', // Use exponential backoff for retries
-        delay: 1000, // Initial delay of 1 second
+        type: 'exponential',
+        delay: 1000,
     },
     removeOnFail: {
-        age: 60 * 60, // Remove failed jobs after 1 hour
+        age: 60 * 60,
     },
 }
