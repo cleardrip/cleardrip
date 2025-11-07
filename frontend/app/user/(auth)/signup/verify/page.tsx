@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { AuthService } from '@/lib/httpClient/userAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,22 +13,22 @@ const Verify = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const [phone, setPhone] = React.useState<string | null>(null);
-    const [email, setEmail] = React.useState<string | null>(null);
-    const [phoneOtp, setPhoneOtp] = React.useState<string[]>(['', '', '', '', '', '']);
-    const [emailOtp, setEmailOtp] = React.useState<string[]>(['', '', '', '', '', '']);
-    const [message, setMessage] = React.useState<string | null>(null);
-    const [error, setError] = React.useState<string | null>(null);
-    const [loading, setLoading] = React.useState<boolean>(false);
-    const [phoneResendTimer, setPhoneResendTimer] = React.useState<number>(60);
-    const [emailResendTimer, setEmailResendTimer] = React.useState<number>(60);
-    const [canResendPhone, setCanResendPhone] = React.useState<boolean>(false);
-    const [canResendEmail, setCanResendEmail] = React.useState<boolean>(false);
+    const [phone, setPhone] = useState<string | null>(null);
+    const [email, setEmail] = useState<string | null>(null);
+    const [phoneOtp, setPhoneOtp] = useState<string[]>(['', '', '', '', '', '']);
+    const [emailOtp, setEmailOtp] = useState<string[]>(['', '', '', '', '', '']);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [phoneResendTimer, setPhoneResendTimer] = useState<number>(60);
+    const [emailResendTimer, setEmailResendTimer] = useState<number>(60);
+    const [canResendPhone, setCanResendPhone] = useState<boolean>(false);
+    const [canResendEmail, setCanResendEmail] = useState<boolean>(false);
 
-    const phoneInputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
-    const emailInputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+    const phoneInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const emailInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // Get phone and email from URL params or session storage
         const phoneParam = searchParams.get('phone') || sessionStorage.getItem('signupPhone');
         const emailParam = searchParams.get('email') || sessionStorage.getItem('signupEmail');
@@ -344,4 +344,12 @@ const Verify = () => {
     );
 };
 
-export default Verify;
+const VerifyWithSuspense = () => {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <Verify />
+        </Suspense>
+    )
+}
+
+export default VerifyWithSuspense;
