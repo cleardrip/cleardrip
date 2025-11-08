@@ -46,11 +46,17 @@ const Verify = () => {
     const [email, setEmail] = useState<string | null>(null);
     const [phoneOtp, setPhoneOtp] = useState<string[]>(['', '', '', '', '', '']);
     const [emailOtp, setEmailOtp] = useState<string[]>(['', '', '', '', '', '']);
-    const [message, setMessage] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [phoneResendTimer, setPhoneResendTimer] = useState<number>(60);
-    const [emailResendTimer, setEmailResendTimer] = useState<number>(60);
+    // REPLACED global message/error/loading with per-channel state
+    const [phoneMessage, setPhoneMessage] = useState<string | null>(null);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [phoneLoading, setPhoneLoading] = useState<boolean>(false);
+    const [phoneVerified, setPhoneVerified] = useState<boolean>(false);
+    const [emailMessage, setEmailMessage] = useState<string | null>(null);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [emailLoading, setEmailLoading] = useState<boolean>(false);
+    const [emailVerified, setEmailVerified] = useState<boolean>(false);
+    const [phoneResendTimer, setPhoneResendTimer] = useState<number>(6);
+    const [emailResendTimer, setEmailResendTimer] = useState<number>(6);
     const [canResendPhone, setCanResendPhone] = useState<boolean>(false);
     const [canResendEmail, setCanResendEmail] = useState<boolean>(false);
 
@@ -144,53 +150,74 @@ const Verify = () => {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setMessage(null);
-
+    // REMOVED handleSubmit; ADD per-channel verify handlers
+    const handleVerifyPhoneOtp = async () => {
+        if (!phone) return;
         const phoneOtpString = phoneOtp.join('');
-        const emailOtpString = emailOtp.join('');
-
-        if ((!phoneOtpString && phone) || (!emailOtpString && email)) {
-            setError("Please enter OTP first");
-            setLoading(false);
+        if (phoneOtpString.length !== 6) {
+            setPhoneError('Enter full 6-digit phone OTP');
             return;
         }
-
+        setPhoneLoading(true);
+        setPhoneError(null);
+        setPhoneMessage(null);
         try {
             const formattedPhone = formatPhoneNumber(phone);
-            const result = await AuthService.verifyOtp(
-                phoneOtpString,
-                emailOtpString,
-                formattedPhone,
-                email ?? undefined
-            );
-            setMessage(result.message || 'Verification successful!');
+            const result = await AuthService.verifyOtp(phoneOtpString, undefined, formattedPhone, undefined);
+            setPhoneMessage(result.message || 'Phone verified!');
+            setPhoneVerified(true);
+            attemptRedirectAfterBothVerified(true, emailVerified);
+        } catch (err: any) {
+            setPhoneError(err.message || 'Phone verification failed');
+        } finally {
+            setPhoneLoading(false);
+        }
+    };
 
-            // Redirect to dashboard after 2 seconds
+    const handleVerifyEmailOtp = async () => {
+        if (!email) return;
+        const emailOtpString = emailOtp.join('');
+        if (emailOtpString.length !== 6) {
+            setEmailError('Enter full 6-digit email OTP');
+            return;
+        }
+        setEmailLoading(true);
+        setEmailError(null);
+        setEmailMessage(null);
+        try {
+            const result = await AuthService.verifyOtp(undefined, emailOtpString, undefined, email);
+            setEmailMessage(result.message || 'Email verified!');
+            setEmailVerified(true);
+            attemptRedirectAfterBothVerified(phoneVerified, true);
+        } catch (err: any) {
+            setEmailError(err.message || 'Email verification failed');
+        } finally {
+            setEmailLoading(false);
+        }
+    };
+
+    // Redirect when all provided channels are verified
+    const attemptRedirectAfterBothVerified = (phoneDone: boolean, emailDone: boolean) => {
+        const phoneNeeded = !!phone;
+        const emailNeeded = !!email;
+        if ((phoneNeeded ? phoneDone : true) && (emailNeeded ? emailDone : true)) {
             setTimeout(() => {
                 router.push('/user/dashboard');
-            }, 2000);
-        } catch (error: any) {
-            setError(error.message || 'Verification failed. Please try again.');
-        } finally {
-            setLoading(false);
+            }, 1500);
         }
     };
 
     const handleResendPhoneOtp = async () => {
         if (!canResendPhone) return;
 
-        setLoading(true);
-        setError(null);
-        setMessage(null);
+        setPhoneLoading(true);
+        setPhoneError(null);
+        setPhoneMessage(null);
 
         try {
             const formattedPhone = formatPhoneNumber(phone);
             await AuthService.sendOtp(formattedPhone, undefined);
-            setMessage('Phone OTP resent successfully!');
+            setPhoneMessage('Phone OTP resent successfully!');
             setCanResendPhone(false);
             setPhoneResendTimer(60);
 
@@ -205,22 +232,22 @@ const Verify = () => {
                 });
             }, 1000);
         } catch (error: any) {
-            setError(error.message || 'Failed to resend phone OTP');
+            setPhoneError(error.message || 'Failed to resend phone OTP');
         } finally {
-            setLoading(false);
+            setPhoneLoading(false);
         }
     };
 
     const handleResendEmailOtp = async () => {
         if (!canResendEmail) return;
 
-        setLoading(true);
-        setError(null);
-        setMessage(null);
+        setEmailLoading(true);
+        setEmailError(null);
+        setEmailMessage(null);
 
         try {
             await AuthService.sendOtp(undefined, email ?? undefined);
-            setMessage('Email OTP resent successfully!');
+            setEmailMessage('Email OTP resent successfully!');
             setCanResendEmail(false);
             setEmailResendTimer(60);
 
@@ -235,9 +262,9 @@ const Verify = () => {
                 });
             }, 1000);
         } catch (error: any) {
-            setError(error.message || 'Failed to resend email OTP');
+            setEmailError(error.message || 'Failed to resend email OTP');
         } finally {
-            setLoading(false);
+            setEmailLoading(false);
         }
     };
 
@@ -252,128 +279,135 @@ const Verify = () => {
                 </CardHeader>
 
                 <CardContent className="px-4 sm:px-6 pb-6">
-                    {/* Alert Messages */}
-                    {(message || error) && (
-                        <Alert className={`mb-4 sm:mb-6 ${error ? 'border-red-500 bg-red-50 text-red-800' : 'border-green-500 bg-green-50 text-green-800'}`}>
-                            {error ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
-                            <AlertDescription className="text-sm">{error || message}</AlertDescription>
-                        </Alert>
+                    {/* REMOVED global alert */}
+                    {/* Phone OTP Section */}
+                    {phone && (
+                        <div className="space-y-2 sm:space-y-3 mb-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700">Phone Verification</h3>
+                                    <p className="text-xs text-gray-500 break-all">Code sent to {phone}</p>
+                                </div>
+                                <div className="text-right">
+                                    {canResendPhone ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleResendPhoneOtp}
+                                            disabled={phoneLoading}
+                                            className="text-blue-600 text-xs font-semibold hover:underline disabled:opacity-50"
+                                        >
+                                            Resend
+                                        </button>
+                                    ) : (
+                                        <p className="text-xs text-gray-500">
+                                            {phoneResendTimer}s
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex gap-1.5 sm:gap-2 justify-center">
+                                {phoneOtp.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        ref={(el) => { phoneInputRefs.current[index] = el; }}
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleOtpChange(index, e.target.value, true)}
+                                        onKeyDown={(e) => handleKeyDown(e, index, true)}
+                                        onPaste={(e) => handlePaste(e, true)}
+                                        className={`w-9 h-11 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold border-2 rounded-lg outline-none transition-all ${phoneVerified ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+                                            }`}
+                                        aria-label={`Phone OTP digit ${index + 1}`}
+                                        disabled={phoneVerified}
+                                    />
+                                ))}
+                            </div>
+                            {(phoneMessage || phoneError) && (
+                                <Alert className={`mt-2 ${phoneError ? 'border-red-500 bg-red-50 text-red-800' : 'border-green-500 bg-green-50 text-green-800'}`}>
+                                    {phoneError ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                                    <AlertDescription className="text-sm">{phoneError || phoneMessage}</AlertDescription>
+                                </Alert>
+                            )}
+                            <Button
+                                type="button"
+                                onClick={handleVerifyPhoneOtp}
+                                disabled={phoneLoading || phoneVerified}
+                                className="w-full h-10 text-sm"
+                            >
+                                {phoneLoading ? 'Verifying...' : phoneVerified ? 'Phone Verified' : 'Verify Phone'}
+                            </Button>
+                        </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                        {/* Phone OTP Section */}
-                        {phone && (
-                            <div className="space-y-2 sm:space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-700">Phone Verification</h3>
-                                        <p className="text-xs text-gray-500 break-all">Code sent to {phone}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        {canResendPhone ? (
-                                            <button
-                                                type="button"
-                                                onClick={handleResendPhoneOtp}
-                                                disabled={loading}
-                                                className="text-blue-600 text-xs font-semibold hover:underline disabled:opacity-50"
-                                            >
-                                                Resend
-                                            </button>
-                                        ) : (
-                                            <p className="text-xs text-gray-500">
-                                                {phoneResendTimer}s
-                                            </p>
-                                        )}
-                                    </div>
+                    {/* Email OTP Section */}
+                    {email && (
+                        <div className="space-y-2 sm:space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700">Email Verification</h3>
+                                    <p className="text-xs text-gray-500 break-all">Code sent to {email}</p>
                                 </div>
-                                <div className="flex gap-1.5 sm:gap-2 justify-center">
-                                    {phoneOtp.map((digit, index) => (
-                                        <input
-                                            key={index}
-                                            ref={(el) => { phoneInputRefs.current[index] = el; }}
-                                            type="text"
-                                            inputMode="numeric"
-                                            maxLength={1}
-                                            value={digit}
-                                            onChange={(e) => handleOtpChange(index, e.target.value, true)}
-                                            onKeyDown={(e) => handleKeyDown(e, index, true)}
-                                            onPaste={(e) => handlePaste(e, true)}
-                                            className="w-9 h-11 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                                            aria-label={`Phone OTP digit ${index + 1}`}
-                                        />
-                                    ))}
+                                <div className="text-right">
+                                    {canResendEmail ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleResendEmailOtp}
+                                            disabled={emailLoading}
+                                            className="text-blue-600 text-xs font-semibold hover:underline disabled:opacity-50"
+                                        >
+                                            Resend
+                                        </button>
+                                    ) : (
+                                        <p className="text-xs text-gray-500">
+                                            {emailResendTimer}s
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                        )}
-
-                        {/* Email OTP Section */}
-                        {email && (
-                            <div className="space-y-2 sm:space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-700">Email Verification</h3>
-                                        <p className="text-xs text-gray-500 break-all">Code sent to {email}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        {canResendEmail ? (
-                                            <button
-                                                type="button"
-                                                onClick={handleResendEmailOtp}
-                                                disabled={loading}
-                                                className="text-blue-600 text-xs font-semibold hover:underline disabled:opacity-50"
-                                            >
-                                                Resend
-                                            </button>
-                                        ) : (
-                                            <p className="text-xs text-gray-500">
-                                                {emailResendTimer}s
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex gap-1.5 sm:gap-2 justify-center">
-                                    {emailOtp.map((digit, index) => (
-                                        <input
-                                            key={index}
-                                            ref={(el) => { emailInputRefs.current[index] = el; }}
-                                            type="text"
-                                            inputMode="numeric"
-                                            maxLength={1}
-                                            value={digit}
-                                            onChange={(e) => handleOtpChange(index, e.target.value, false)}
-                                            onKeyDown={(e) => handleKeyDown(e, index, false)}
-                                            onPaste={(e) => handlePaste(e, false)}
-                                            className="w-9 h-11 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                                            aria-label={`Email OTP digit ${index + 1}`}
-                                        />
-                                    ))}
-                                </div>
+                            <div className="flex gap-1.5 sm:gap-2 justify-center">
+                                {emailOtp.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        ref={(el) => { emailInputRefs.current[index] = el; }}
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleOtpChange(index, e.target.value, false)}
+                                        onKeyDown={(e) => handleKeyDown(e, index, false)}
+                                        onPaste={(e) => handlePaste(e, false)}
+                                        className={`w-9 h-11 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold border-2 rounded-lg outline-none transition-all ${emailVerified ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
+                                            }`}
+                                        aria-label={`Email OTP digit ${index + 1}`}
+                                        disabled={emailVerified}
+                                    />
+                                ))}
                             </div>
-                        )}
-
-                        {/* Submit Button */}
-                        <Button
-                            type="submit"
-                            className="w-full h-11 sm:h-12 text-sm sm:text-base"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <div className="flex items-center justify-center gap-2">
-                                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    <span>Verifying...</span>
-                                </div>
-                            ) : (
-                                'Verify Account'
+                            {(emailMessage || emailError) && (
+                                <Alert className={`mt-2 ${emailError ? 'border-red-500 bg-red-50 text-red-800' : 'border-green-500 bg-green-50 text-green-800'}`}>
+                                    {emailError ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                                    <AlertDescription className="text-sm">{emailError || emailMessage}</AlertDescription>
+                                </Alert>
                             )}
-                        </Button>
-
-                        {/* Back Link */}
-                        <div className="text-center text-xs sm:text-sm text-gray-600">
-                            <Link href="/user/dashboard" className="text-blue-600 hover:underline">
-                                Go Back
-                            </Link>
+                            <Button
+                                type="button"
+                                onClick={handleVerifyEmailOtp}
+                                disabled={emailLoading || emailVerified}
+                                className="w-full h-10 text-sm"
+                            >
+                                {emailLoading ? 'Verifying...' : emailVerified ? 'Email Verified' : 'Verify Email'}
+                            </Button>
                         </div>
-                    </form>
+                    )}
+
+                    {/* Back Link */}
+                    <div className="text-center text-xs sm:text-sm text-gray-600 mt-6">
+                        <Link href="/user/dashboard" className="text-blue-600 hover:underline">
+                            Go Back
+                        </Link>
+                    </div>
                 </CardContent>
             </Card>
         </div>

@@ -23,17 +23,18 @@ export const requestOtpHandler = async (req: FastifyRequest, reply: FastifyReply
 }
 
 export const verifyOtpHandler = async (req: FastifyRequest, reply: FastifyReply) => {
+    console.log("\n\nVerify OTP Handler called", JSON.stringify(req.body), "\n\n");
     const body = verifyOtpSchema.safeParse(req.body);
     if (!body.success) {
         return sendError(reply, 400, "Validation error", body.error.issues);
     }
     try {
-        const { phone, email, otp } = body.data;
+        const { phone, email, emailOtp, phoneOtp } = body.data;
         if (!phone && !email) return sendError(reply, 400, "Email or Phone is required to verify otp.");
 
         const results = await Promise.allSettled([
-            phone ? verifyOtp(otp, phone) : null,
-            email ? verifyEmailOtp(otp, email) : null
+            phone ? verifyOtp(phoneOtp ?? "", phone) : null,
+            email ? verifyEmailOtp(emailOtp ?? "", email) : null
         ]);
 
         const phoneResult = results[0].status === 'fulfilled' && results[0].value ? results[0].value : null;
