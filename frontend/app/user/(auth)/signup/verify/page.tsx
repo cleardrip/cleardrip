@@ -162,7 +162,8 @@ const Verify = () => {
         setPhoneError(null);
         setPhoneMessage(null);
         try {
-            const formattedPhone = formatPhoneNumber(phone);
+            const formattedPhone = phone;
+            // const formattedPhone = formatPhoneNumber(phone);
             const result = await AuthService.verifyOtp(phoneOtpString, undefined, formattedPhone, undefined);
             setPhoneMessage(result.message || 'Phone verified!');
             setPhoneVerified(true);

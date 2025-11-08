@@ -33,27 +33,42 @@ export const verifyOtpHandler = async (req: FastifyRequest, reply: FastifyReply)
         if (!phone && !email) return sendError(reply, 400, "Email or Phone is required to verify otp.");
 
         const results = await Promise.allSettled([
-            phone ? verifyOtp(phoneOtp ?? "", phone) : null,
-            email ? verifyEmailOtp(emailOtp ?? "", email) : null
+            phone && phoneOtp ? verifyOtp(phoneOtp, phone) : Promise.resolve(null),
+            email && emailOtp ? verifyEmailOtp(emailOtp, email) : Promise.resolve(null)
         ]);
+        console.log("\n\nOTP verification results", JSON.stringify(results));
 
         const phoneResult = results[0].status === 'fulfilled' && results[0].value ? results[0].value : null;
         const emailResult = results[1].status === 'fulfilled' && results[1].value ? results[1].value : null;
 
         const response: any = {};
 
-        if (phoneResult) {
-            response.phone = {
-                success: phoneResult.success,
-                message: phoneResult.message
-            };
+        if (phone && phoneOtp) {
+            if (results[0].status === 'rejected') {
+                response.phone = {
+                    success: false,
+                    message: results[0].reason?.message || "Phone OTP verification failed"
+                };
+            } else if (phoneResult) {
+                response.phone = {
+                    success: phoneResult.success,
+                    message: phoneResult.message
+                };
+            }
         }
 
-        if (emailResult) {
-            response.email = {
-                success: emailResult.success,
-                message: emailResult.message
-            };
+        if (email && emailOtp) {
+            if (results[1].status === 'rejected') {
+                response.email = {
+                    success: false,
+                    message: results[1].reason?.message || "Email OTP verification failed"
+                };
+            } else if (emailResult) {
+                response.email = {
+                    success: emailResult.success,
+                    message: emailResult.message
+                };
+            }
         }
 
         const anySuccess = (phoneResult?.success || emailResult?.success);
@@ -64,7 +79,8 @@ export const verifyOtpHandler = async (req: FastifyRequest, reply: FastifyReply)
                 results: response
             });
         } else {
-            return sendError(reply, 400, "Failed to verify OTP", response);
+            logger.warn("OTP verification failed", response);   
+            return sendError(reply, 400, "OTP verification failed", response);
         }
     } catch (error) {
         logger.error(error, "Verify OTP error")

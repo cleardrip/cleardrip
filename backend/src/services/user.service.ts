@@ -51,7 +51,7 @@ export async function createUser(data: SignupInput) {
         })
     })
     generateAndSendOtp(data.phone)
-    generateAndSendOtp(data.email)
+    generateAndSendOtp(undefined, data.email)
     return result
 }
 
