@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
             
             const data = await response.json();
-            console.log("Auth context response ", data);
             
             if(!response.ok){
                 throw new Error(data?.error || "Not Authenticated");
@@ -48,10 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             const role = data.role;
             const adminRole = data.user?.adminRole ?? null;
-            
-            // ✅ Debug log to see what we're working with
-            console.log("Role values:", { role, adminRole, userRole: data.user?.role });
-            
+                        
             setState({
                 authenticated: true,
                 role,

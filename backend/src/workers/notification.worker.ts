@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 export const emailWorker = new Worker(
     emailQueueName,
     async (job: Job) => {
-        console.log(`Processing email job: ${job.id}`);
         logger.info(`Processing email job: ${job.id}`);
         
         try {
@@ -34,10 +33,10 @@ export const emailWorker = new Worker(
                 });
             }
 
-            console.log(`Email sent successfully to ${to}`);
+            logger.info(`Email sent successfully to ${to}`);
             return { success: true, message: "Email sent successfully" };
         } catch (error: any) {
-            console.error(`Error processing email job:`, error);
+            logger.error(`Error processing email job:`, error);
             throw error;
         }
     },
@@ -48,13 +47,13 @@ export const emailWorker = new Worker(
 );
 
 emailWorker.on('completed', (job) => {
-    console.log(`Job ${job.id} completed`);
+    logger.info(`Job ${job.id} completed`);
 });
 
 emailWorker.on('failed', (job, err) => {
-    console.error(`Job ${job?.id} failed: ${err.message}`);
+    logger.error(`Job ${job?.id} failed: ${err.message}`);
 });
 
 emailWorker.on('error', (err) => {
-    console.error('Worker error:', err);
+    logger.error('Worker error:', err);
 })

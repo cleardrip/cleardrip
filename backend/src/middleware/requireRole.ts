@@ -19,7 +19,6 @@ declare module "fastify" {
 export function requireRole(allowedRoles: Role[]) {
     return async function (req: FastifyRequest, reply: FastifyReply) {
         const token = req.cookies?.admin_token || req.cookies?.user_token || req.cookies?.super_admin_token;
-        // console.log(`\n\nReq.Cookies : ${JSON.stringify(req.cookies)}\n\n`);
         if (!token) {
             logger.warn(`\nUnauthorized access attempt to ${req.url} - No token provided`);
             return reply.code(401).send({ error: "You must be logged in to access this resource." })

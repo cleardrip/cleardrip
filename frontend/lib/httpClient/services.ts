@@ -29,7 +29,6 @@ export class ServicesClass {
             return result;
         }
         catch (error) {
-            console.log('Error creating services: ' + error);
             throw error;
         }
     }
@@ -67,7 +66,6 @@ export class ServicesClass {
             }
         }
         catch (error) {
-            console.log('Error fetching services: ' + error);
             throw error;
         }
     }
@@ -118,7 +116,6 @@ export class ServicesClass {
             return result;
         }
         catch (error) {
-            console.log('Error updating service status', error);
             throw error;
         }
     }

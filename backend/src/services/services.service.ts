@@ -128,7 +128,7 @@ export const getAllServices = async (take: number, skip: number, userId?: string
             createdAt: "desc",
         },
     });
-    console.log('Fetched services:', services.length);
+    
     return services;
 };
 

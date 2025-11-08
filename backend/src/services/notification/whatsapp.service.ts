@@ -20,7 +20,6 @@ export async function sendWhatsAppNotification(userId: string, message: string) 
             to: user.whatsappNumber,
             message,
         });
-      console.log(`\n\nWhatsApp notification sent to user ${userId}`);
     } catch (error) {
         logger.error(`Failed to send WhatsApp notification to user ${userId}: ${(error as Error).message}`);
         throw error;

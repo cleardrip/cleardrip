@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
 export async function searchAll(query: string) {
-    console.log("\n\nSearching for:", query);
-    console.log("\n\nSearching for:", JSON.stringify(query));
     const [services, products, plans] = await Promise.all([
         prisma.serviceDefinition.findMany({
             where: {

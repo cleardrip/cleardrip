@@ -2,18 +2,17 @@ import { logger } from '@/lib/logger';
 import { emailWorker } from './notification.worker';
 
 export const initWorkers = () => {
-    console.log('Initializing BullMQ workers...');
+    logger.info('Initializing BullMQ workers...');
     
     emailWorker.on('ready', () => {
-        console.log('Email worker is ready');
-        logger.info('Email worker initialized');
+        logger.info('Email worker is ready');
     });
 
-    console.log('All workers initialized');
+    logger.info('All workers initialized');
 };
 
 export const closeWorkers = async () => {
-    console.log('Closing workers...');
+    logger.info ('Closing workers...');
     await emailWorker.close();
-    console.log('All workers closed');
+    logger.info('All workers closed');
 };

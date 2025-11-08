@@ -28,15 +28,9 @@ export const generateAndSendOtp = async (phone?: string, email?: string): Promis
         return { status: verification.status, channel: "phone" };
     }
     if (email) {
-        // ✅ Send OTP via Twilio Email
-        const verification = await twilioClient.verify.v2
-            .services(process.env.TWILIO_VERIFY_SERVICE_SID!)
-            .verifications.create({
-                to: email,
-                channel: "email",
-            });
-
-        return { status: verification.status, channel: "email" };
+        // Send OTP via Email
+        await SendEmailOtp(email);
+        return { status: "pending", channel: "email" };
     }
 
     throw new Error("Either phone or email must be provided");
@@ -51,7 +45,6 @@ export const SendEmailOtp = async (email: string) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
     // TODO: Send OTP via SMS/Email
-    console.log(`OTP for ${email}: ${otp}`);
     emailQueue.add(emailQueueName, {
         to: email,
         subject: "Your OTP Code",
@@ -71,36 +64,39 @@ export const SendEmailOtp = async (email: string) => {
         }
     });
 
-    return true;
+    return { status: "pending", channel: "email" };
 };
 
-export const verifyOtp = async (otp: string, phone?: string, email?: string): Promise<{ success: boolean, message: string }> => {
-    if (!otp || (!phone && !email)) {
-        throw new Error("OTP and either phone or email must be provided");
+export const verifyOtp = async (otp: string, phone?: string): Promise<{ success: boolean, message: string }> => {
+    if (!otp || !phone) {
+        throw new Error("OTP and phone must be provided");
     }
 
     // const user = await findUserByEmailOrPhone(email, phone);
     // if (!user) {
     //     throw new Error("User not found");
     // }
+    // remove white spaces and special characters from phone number
+    phone = phone.replace(/\s+/g, '').replace(/[^+\d]/g, '');
 
     const verification_check = await twilioClient.verify.v2
         .services(process.env.TWILIO_VERIFY_SERVICE_SID!)
         .verificationChecks.create({
-            to: phone ? (phone.startsWith("+") ? phone : `+91${phone}`) : email!,
+            to: (phone.startsWith("+") ? phone : `+91${phone}`),
             code: otp,
         });
 
     if (verification_check.status === "approved") {
         return { success: true, message: "OTP verified successfully" };
+
     } else {
         throw new Error("Invalid or expired OTP");
     }
-};
+}
 
 
 export const verifyEmailOtp = async (otp: string, email: string) => {
-    if (!otp || (!email)) {
+    if (!otp || !email) {
         throw new Error("OTP and email must be provided");
     }
 
@@ -134,5 +130,5 @@ export const verifyEmailOtp = async (otp: string, email: string) => {
         data: { verified: true }
     });
 
-    return true;
+    return { success: true, message: "OTP verified successfully" };
 };

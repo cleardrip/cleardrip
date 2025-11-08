@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
+import { logger } from '@/lib/logger';
 
 export default async function corsPlugin(app: FastifyInstance) {
     await app.register(cors, {
@@ -12,10 +13,9 @@ export default async function corsPlugin(app: FastifyInstance) {
                 // 'https://cleardrip.in'
             ];
             if (!origin || allowedOrigins.includes(origin)) {
-                console.log('\n\nCORS Allowed Origin:', origin);
                 callback(null, true);
             } else {
-                console.log('CORS Rejected Origin:', origin);
+                logger.warn('CORS Rejected Origin:', origin);
                 callback(new Error('Not allowed by CORS'), false);
             }
         },

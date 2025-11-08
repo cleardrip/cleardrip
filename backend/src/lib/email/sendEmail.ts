@@ -1,6 +1,7 @@
 "use server";
 import { SMTP_HOST, SMTP_PASSWORD, SMTP_USER, FROM_EMAIL, FROM_NAME } from "../../config/env";
 import nodemailer from "nodemailer";
+import { logger } from "../logger";
 
 const sendEmail = async (to: string, subject: string, message: string, html: string) => {
     const transporter = nodemailer.createTransport({
@@ -16,7 +17,6 @@ const sendEmail = async (to: string, subject: string, message: string, html: str
     try {
         // Verify connection
         await transporter.verify();
-        console.log("Gmail SMTP connection verified");
 
         const uniqueId = Date.now();
         const info = await transporter.sendMail({
@@ -33,7 +33,7 @@ const sendEmail = async (to: string, subject: string, message: string, html: str
             date: new Date(),
         });
 
-        console.log("Email sent successfully:", info.messageId);
+        logger.info("Email sent successfully:", info.messageId);
         return { 
             message: "Email sent successfully", 
             messageId: info.messageId,

@@ -125,23 +125,11 @@ export default function SubscriptionsPage() {
     setFormLoading(true);
 
     try {
-      console.log("Attempting to delete subscription with ID:", deleteId);
-
       const response = await SubscriptionClass.deleteSubscriptionPlan(deleteId);
-
-      console.log("Delete response:", response);
-
       toast.success("Subscription deleted successfully");
       setSubscriptions((subs) => subs.filter((s) => s.id !== deleteId));
       setDeleteId(null);
     } catch (error: any) {
-      console.error("Delete error details:", {
-        message: error.message,
-        status: error.status,
-        response: error.response,
-        error: error,
-      });
-
       const errorMessage = error.message || error.response?.data?.message || "Failed to delete subscription";
       setDeleteError(errorMessage);
       toast.error(errorMessage);

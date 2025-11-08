@@ -159,7 +159,6 @@ export const deleteExpiredTokens = async () => {
             },
         });
         
-        console.log(`Deleted ${result.count} expired reset tokens`);
         return result;
     } catch (error) {
         console.error('Error deleting expired tokens:', error);

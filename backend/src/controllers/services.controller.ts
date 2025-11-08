@@ -8,6 +8,7 @@ import { sendError } from "@/utils/errorResponse";
 import { createRazorpayOrder } from "@/lib/createRazorpayOrder";
 import cloudinary from "@/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     const userId = req.user?.userId;
@@ -25,7 +26,6 @@ export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyRepl
         // Iterate through all parts ONCE
         for await (const part of parts) {
             if (part.type === 'file') {
-                console.log(`Received file: ${part.filename}`);
                 
                 // Validate file type
                 const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -61,8 +61,6 @@ export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyRepl
 
         // Handle file upload if present
         if (fileBuffer && fileInfo) {
-            console.log("Uploading to Cloudinary...");
-            
             const resourceType = fileInfo.mimetype === 'application/pdf' ? 'raw' : 'image';
 
             const uploadedUrl = await new Promise<string>((resolve, reject) => {
@@ -81,16 +79,13 @@ export const BookServiceHandler = async (req: FastifyRequest, reply: FastifyRepl
                 stream.end(fileBuffer);
             });
 
-            console.log(`Image uploaded: ${uploadedUrl}`);
             serviceData = {
                 ...serviceData,
                 beforeImageUrl: uploadedUrl,
             };
         } else {
-            console.log("No file uploaded, proceeding without image...");
+            logger.info("No file uploaded, proceeding without image...");
         }
-
-        console.log("Service data to be booked:", serviceData);
 
         // Fetch service details and create Razorpay order
         const serviceDetails = await getServiceById(serviceData.serviceId, false);
@@ -182,8 +177,8 @@ export const GetAllServicesHandler = async (req: FastifyRequest, reply: FastifyR
     const isAdminUser = isAdmin(req.user?.role);
     if (!userId) {
         return sendError(reply, 401, "Unauthorized", "User ID is required");
-    }
-    console.log(`\n\nFetching all services for user: ${userId}\n\n`);
+  }
+  
     try {
         let services, totalServices;
         if (isAdminUser) {
@@ -305,7 +300,7 @@ export const AddSlotHandler = async (req: FastifyRequest, reply: FastifyReply) =
             slot: newSlot.inserted
         });
     } catch (error: any) {
-        console.log(error);
+        logger.error("Failed to add slot:", error);
         return sendError(reply, 500, error.message, "Failed to add slot");
     }
 }
@@ -523,7 +518,6 @@ export const AdminUpdateBookingHandler = async (
 
     // Upload after image if provided
     if (fileBuffer && fileInfo) {
-      console.log("Uploading after image to Cloudinary...");
 
       afterImageUrl = await new Promise<string>((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -542,8 +536,6 @@ export const AdminUpdateBookingHandler = async (
 
         stream.end(fileBuffer);
       });
-
-      console.log(`After image uploaded: ${afterImageUrl}`);
     }
 
     // Update booking

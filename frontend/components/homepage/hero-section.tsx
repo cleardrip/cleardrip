@@ -48,7 +48,6 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ onClose }) => {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                        console.log("Close button clicked"); // Debug log
                         onClose();
                     }}
                     className="p-1 hover:bg-orange-200 rounded-full flex-shrink-0 hover: cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300 transition-colors duration-200"

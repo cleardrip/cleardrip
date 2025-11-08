@@ -22,7 +22,6 @@ export const AdminSignInHandler = async (req: FastifyRequest, reply: FastifyRepl
         }
         const role = admin.role === "STAFF" ? "ADMIN" : "SUPER_ADMIN";
         const token = generateToken({ userId: admin.id, email: admin.email, role });
-        console.log(`Role of the Admin is : ${role}`);
         setAuthCookie(reply, token, role);
         return reply.code(200).send({ message: "Admin signed in successfully" });
     } catch (error) {

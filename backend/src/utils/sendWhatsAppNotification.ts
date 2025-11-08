@@ -1,4 +1,5 @@
 // utils/sendWhatsAppNotification.ts
+import { logger } from "@/lib/logger";
 import { Twilio_ACCOUNT_SID, Twilio_AUTH_TOKEN } from "../config/env";
 import Twilio from "twilio";
 
@@ -27,10 +28,10 @@ export const sendWhatsAppMessage = async ({
                 : JSON.stringify({ "1": message }),
         });
 
-        console.log("WhatsApp Message SID:", msg.sid);
+        logger.info("WhatsApp Message SID:", msg.sid);
         return msg.sid;
     } catch (error: any) {
-        console.error("Error sending WhatsApp message:", error.message);
+        logger.error("Error sending WhatsApp message:", error.message);
         throw new Error(error.message);
     }
 };
