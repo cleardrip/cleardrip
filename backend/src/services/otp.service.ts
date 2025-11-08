@@ -72,10 +72,10 @@ export const verifyOtp = async (otp: string, phone?: string): Promise<{ success:
         throw new Error("OTP and phone must be provided");
     }
 
-    // const user = await findUserByEmailOrPhone(email, phone);
-    // if (!user) {
-    //     throw new Error("User not found");
-    // }
+    const user = await findUserByEmailOrPhone(phone);
+    if (!user) {
+        throw new Error("User not found");
+    }
     // remove white spaces and special characters from phone number
     phone = phone.replace(/\s+/g, '').replace(/[^+\d]/g, '');
 
@@ -87,6 +87,11 @@ export const verifyOtp = async (otp: string, phone?: string): Promise<{ success:
         });
 
     if (verification_check.status === "approved") {
+        // OTP is verified, update the user
+        await prisma.user.update({
+            where: { phone: phone, id: user.id },
+            data: { isPhoneVerified: true }
+        });
         return { success: true, message: "OTP verified successfully" };
 
     } else {
@@ -98,6 +103,10 @@ export const verifyOtp = async (otp: string, phone?: string): Promise<{ success:
 export const verifyEmailOtp = async (otp: string, email: string) => {
     if (!otp || !email) {
         throw new Error("OTP and email must be provided");
+    }
+    const user = await findUserByEmailOrPhone(email);
+    if (!user) {
+        throw new Error("User not found");
     }
 
     // Fetch the most recent unverified, unexpired OTP session
@@ -128,6 +137,11 @@ export const verifyEmailOtp = async (otp: string, email: string) => {
     await prisma.oTPSession.update({
         where: { id: session.id },
         data: { verified: true }
+    });
+    // update user's email verified status
+    await prisma.user.update({
+        where: { email: email, id: user.id },
+        data: { isEmailVerified: true }
     });
 
     return { success: true, message: "OTP verified successfully" };
