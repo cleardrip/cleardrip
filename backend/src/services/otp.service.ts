@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { encryptOtp, compareOtp } from "@/utils/auth";
 import { findUserByEmailOrPhone } from "./user.service";
-import { logger } from "@/lib/logger";
 import { emailQueue, emailQueueName } from "@/queues/email.queue";
 
 import { twilioClient } from "@/lib/twilio";

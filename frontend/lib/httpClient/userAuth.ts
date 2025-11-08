@@ -7,7 +7,7 @@ export class AuthService {
     if (!phone && !email) {
       throw new Error("Either phone or email must be provided");
     }
-    const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+    const response = await fetch(`${API_BASE_URL}/otp/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export class AuthService {
   }
 
   static async verifyOtp(phoneOtp?: string, emailOtp?: string, phone?: string, email?: string): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+    const response = await fetch(`${API_BASE_URL}/otp/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
