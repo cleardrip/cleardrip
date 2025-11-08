@@ -11,7 +11,7 @@ import { UserSignUpTemplate } from "@/lib/email/template";
 import { emailQueue, emailQueueName } from "@/queues/email.queue";
 import { generatePasswordResetToken, resetUserPassword, verifyPasswordResetToken } from "@/services/passwordReset.service";
 import { sendPasswordResetEmail } from "@/lib/email/sendPasswordResetEmail";
-import { SendEmailOtp } from "@/services/otp.service";
+import { generateAndSendOtp, SendEmailOtp } from "@/services/otp.service";
 
 export const signupHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -37,6 +37,9 @@ export const signupHandler = async (req: FastifyRequest, reply: FastifyReply) =>
             });
             // send OTP email
             SendEmailOtp(user.email);
+        }
+        if (user.phone) {
+            generateAndSendOtp(user.phone, undefined);
         }
         return reply.code(201).send({
             message: "Registration successful",
