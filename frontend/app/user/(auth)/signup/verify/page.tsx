@@ -9,6 +9,35 @@ import { Button } from '@/components/core/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
+// format phone number to +91XXXXXXXXXX
+const formatPhoneNumber = (phone?: string | null): string | undefined => {
+    if (!phone) return undefined;
+    const digits = phone.replace(/\D/g, '');
+    if (!digits) return undefined;
+
+    // Remove leading zeros
+    let trimmed = digits.replace(/^0+/, '');
+
+    // If starts with 91 and total length > 12 (duplicated code), collapse it
+    if (/^(91){2,}\d+/.test(trimmed)) {
+        // remove repeated 91 occurrences at start, keep one
+        trimmed = '91' + trimmed.replace(/^(91)+/, '');
+    }
+
+    // If already in full form 91 + 10 digits
+    if (/^91\d{10}$/.test(trimmed)) {
+        return `+${trimmed}`;
+    }
+
+    // If local 10-digit number, apply +91
+    if (/^\d{10}$/.test(trimmed)) {
+        return `+91${trimmed}`;
+    }
+
+    // Fallback: prefix plus (E.164-ish, caller should ensure correctness)
+    return `+${trimmed}`;
+};
+
 const Verify = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -131,7 +160,13 @@ const Verify = () => {
         }
 
         try {
-            const result = await AuthService.verifyOtp(phoneOtpString, emailOtpString, phone ?? undefined, email ?? undefined);
+            const formattedPhone = formatPhoneNumber(phone);
+            const result = await AuthService.verifyOtp(
+                phoneOtpString,
+                emailOtpString,
+                formattedPhone,
+                email ?? undefined
+            );
             setMessage(result.message || 'Verification successful!');
 
             // Redirect to dashboard after 2 seconds
@@ -153,7 +188,8 @@ const Verify = () => {
         setMessage(null);
 
         try {
-            await AuthService.sendOtp(phone ?? undefined, undefined);
+            const formattedPhone = formatPhoneNumber(phone);
+            await AuthService.sendOtp(formattedPhone, undefined);
             setMessage('Phone OTP resent successfully!');
             setCanResendPhone(false);
             setPhoneResendTimer(60);
