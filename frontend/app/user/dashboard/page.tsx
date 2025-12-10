@@ -17,7 +17,7 @@ import SettingsPage from '@/components/dashboard/Settings';
 const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
   { id: 'services', label: 'My Services', icon: FileText },
-  { id: 'tds', label: 'Water TDS', icon: Droplet },
+  // { id: 'tds', label: 'Water TDS', icon: Droplet },
   { id: 'bills', label: 'Billing', icon: FileText },
   // { id: 'alerts', label: 'Alerts', icon: Bell },
   { id: 'profile', label: 'Profile', icon: User },
@@ -82,8 +82,8 @@ const ClearDripDashboard = () => {
         return <OverviewTab />
       case 'services':
         return <MyServices />
-      case 'tds':
-        return <Card><CardHeader><CardTitle>Water TDS</CardTitle></CardHeader><CardContent><p>Live water TDS.</p></CardContent></Card>;
+      // case 'tds':
+      //   return <Card><CardHeader><CardTitle>Water TDS</CardTitle></CardHeader><CardContent><p>Live water TDS.</p></CardContent></Card>;
       case 'bills':
         return <Payment />
       // case 'alerts':

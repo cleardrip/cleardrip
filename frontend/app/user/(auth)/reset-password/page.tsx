@@ -98,7 +98,7 @@ function ResetPasswordContent() {
 
             // Redirect to login after 2 seconds
             setTimeout(() => {
-                router.push('/login');
+                router.push('/user/signin');
             }, 2000);
         } catch (err: any) {
             const errorMsg = err.response?.data?.error || 
@@ -262,7 +262,7 @@ function ResetPasswordContent() {
                     <div className="mt-6 text-center">
                         <p className="text-gray-600 text-sm">
                             <Link 
-                                href="/login" 
+                                href="/user/signin"
                                 className="text-blue-600 hover:text-blue-700 font-medium"
                             >
                                 Back to Login

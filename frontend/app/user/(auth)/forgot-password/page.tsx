@@ -30,7 +30,7 @@ export default function ForgotPassword() {
 
             // Redirect to login after 4 seconds
             setTimeout(() => {
-                router.push('/login');
+                router.push('/user/signin');
             }, 4000);
         } catch (err: any) {
             const errorMessage = err.response?.data?.error || 
@@ -115,7 +115,7 @@ export default function ForgotPassword() {
                         <p className="text-gray-600 text-sm">
                             Remember your password?{' '}
                             <Link 
-                                href="/login" 
+                                href="/user/signin"
                                 className="text-blue-600 hover:text-blue-700 font-medium"
                             >
                                 Back to Login
