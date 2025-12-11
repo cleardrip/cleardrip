@@ -96,14 +96,14 @@ export const verifyOtp = async (otp: string, phone?: string): Promise<{ success:
     }
 
     try {
-        const user = await findUserByEmailOrPhone(phone);
+        const user = await findUserByEmailOrPhone(undefined, phone);
         if (!user) {
             logger.warn("User not found for phone OTP verification", phone);
             return { success: false, message: "User not found" };
         }
 
         // remove white spaces and special characters from phone number
-        // phone = phone.replace(/\s+/g, '').replace(/[^+\d]/g, '');
+        phone = phone.replace(/\s+/g, '').replace(/[^+\d]/g, '');
 
         const verification_check = await twilioClient.verify.v2
             .services(process.env.TWILIO_VERIFY_SERVICE_SID!)

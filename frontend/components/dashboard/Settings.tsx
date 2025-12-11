@@ -41,7 +41,7 @@ const SettingsPage = () => {
 
                 <div className="mt-6">
                   <a
-                    href="https://wa.me/+918882143722"
+                    href="https://wa.me/918882143722?text=Hi%20team,%20I%20visited%20your%20Cleardrip%20platform%20and%20would%20like%20to%20know%20more."
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Open WhatsApp chat in a new tab"

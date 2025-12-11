@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 function ResetPasswordContent() {
     const searchParams = useSearchParams();
@@ -16,8 +17,11 @@ function ResetPasswordContent() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [tokenValid, setTokenValid] = useState(false);
+
     const [validating, setValidating] = useState(true);
-    
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     // Password validation state
     const [passwordValidation, setPasswordValidation] = useState({
         minLength: false,
@@ -42,7 +46,7 @@ function ResetPasswordContent() {
                 );
                 setTokenValid(response.data.valid);
             } catch (err: any) {
-                const errorMsg = err.response?.data?.error || 
+                const errorMsg = err.response?.data?.error ||
                     'Invalid or expired reset link';
                 setError(errorMsg);
                 setTokenValid(false);
@@ -52,6 +56,7 @@ function ResetPasswordContent() {
         };
 
         verifyToken();
+        // setValidating(false);
     }, [token]);
 
     // Validate password in real-time
@@ -101,7 +106,7 @@ function ResetPasswordContent() {
                 router.push('/user/signin');
             }, 2000);
         } catch (err: any) {
-            const errorMsg = err.response?.data?.error || 
+            const errorMsg = err.response?.data?.error ||
                 'Failed to reset password. Please try again.';
             setError(errorMsg);
         } finally {
@@ -176,43 +181,61 @@ function ResetPasswordContent() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label 
-                                htmlFor="password" 
+                            <label
+                                htmlFor="password"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                             >
                                 New Password
                             </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Enter new password"
-                                disabled={loading || !!message}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showNewPassword ? "text" : "password"}
+                                    required
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Enter new password"
+                                    disabled={loading || !!message}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                >
+                                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
 
                         <div>
-                            <label 
-                                htmlFor="confirm-password" 
+                            <label
+                                htmlFor="confirm-password"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                             >
                                 Confirm Password
                             </label>
-                            <input
-                                id="confirm-password"
-                                name="confirm-password"
-                                type="password"
-                                required
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Confirm password"
-                                disabled={loading || !!message}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="confirm-password"
+                                    name="confirm-password"
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    required
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Confirm password"
+                                    disabled={loading || !!message}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Password Requirements Checklist */}
@@ -228,11 +251,10 @@ function ResetPasswordContent() {
                                     { key: 'hasLowercase', label: 'At least one lowercase letter (a-z)', valid: passwordValidation.hasLowercase },
                                 ].map(req => (
                                     <li key={req.key} className="flex items-center gap-2 text-sm">
-                                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                                            req.valid 
-                                                ? 'bg-green-200 text-green-800' 
-                                                : 'bg-gray-200 text-gray-600'
-                                        }`}>
+                                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${req.valid
+                                            ? 'bg-green-200 text-green-800'
+                                            : 'bg-gray-200 text-gray-600'
+                                            }`}>
                                             {req.valid ? '✓' : '○'}
                                         </span>
                                         <span className={req.valid ? 'text-green-700' : 'text-gray-600'}>
@@ -261,7 +283,7 @@ function ResetPasswordContent() {
 
                     <div className="mt-6 text-center">
                         <p className="text-gray-600 text-sm">
-                            <Link 
+                            <Link
                                 href="/user/signin"
                                 className="text-blue-600 hover:text-blue-700 font-medium"
                             >

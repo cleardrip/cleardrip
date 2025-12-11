@@ -7,25 +7,27 @@ export async function findUserByEmailOrPhone(email?: string, phone?: string, rol
     if (!email && !phone) {
         throw new Error("Email or Phone required.");
     }
+
+    const whereClause: any = {};
+    const conditions = [];
+
+    if (email) conditions.push({ email });
+    if (phone) conditions.push({ phone });
+
+    if (conditions.length > 0) {
+        whereClause.OR = conditions;
+    }
+
     if (role === 'USER') {
         return prisma.user.findFirst({
-            where: {
-                OR: [
-                    { email: email },
-                    { phone: phone }
-                ]
-            },
+            where: whereClause,
             include: {
                 address: true
             }
         })
     }
     return prisma.admin.findFirst({
-        where: {
-            OR: [
-                { email: email }
-            ]
-        }
+        where: whereClause
     })
 }
 

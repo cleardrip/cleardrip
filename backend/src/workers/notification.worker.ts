@@ -1,6 +1,6 @@
 import { Job, Worker } from "bullmq";
 import { logger } from "@/lib/logger";
-import { getRedisConnection } from "@/lib/redis";
+import { createRedisConnection } from "@/lib/redis";
 import { emailQueueName } from "@/queues/email.queue";
 import { sendEmail } from "@/lib/email/sendEmail";
 import { prisma } from "@/lib/prisma";
@@ -9,16 +9,16 @@ export const emailWorker = new Worker(
     emailQueueName,
     async (job: Job) => {
         logger.info(`Processing email job: ${job.id}`);
-        
+
         try {
             const { to, subject, message, html } = job.data;
-            
+
             if (!to || !subject || !message) {
                 throw new Error("Invalid job data: to, subject, and message are required");
             }
 
             const result = await sendEmail(to, subject, message, html || message);
-            
+
             if (result.error) {
                 throw new Error(`Email sending failed: ${result.error}`);
             }
@@ -26,7 +26,7 @@ export const emailWorker = new Worker(
             if (job.data.notificationId) {
                 await prisma.notification.update({
                     where: { id: job.data.notificationId },
-                    data: { 
+                    data: {
                         status: "SENT",
                         sentAt: new Date()
                     }
@@ -41,7 +41,7 @@ export const emailWorker = new Worker(
         }
     },
     {
-        connection: getRedisConnection(),
+        connection: createRedisConnection(),
         concurrency: 5,
     }
 );
@@ -55,5 +55,6 @@ emailWorker.on('failed', (job, err) => {
 });
 
 emailWorker.on('error', (err) => {
-    logger.error('Worker error:', err);
+    logger.error(`Worker error: ${err.message}`);
+    console.error('Detailed Worker Error:', err);
 })
