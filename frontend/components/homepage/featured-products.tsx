@@ -335,7 +335,7 @@ export default function FeaturedProducts() {
                 isOpen={showAuthDialog}
                 onClose={() => setShowAuthDialog(false)}
                 redirectDelay={5000}
-                actionType="payment"
+                actionType="product"
             />
             <div className="max-w-7xl mx-auto">
                 {/* Section Header */}

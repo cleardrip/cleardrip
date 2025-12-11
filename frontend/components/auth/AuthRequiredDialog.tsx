@@ -9,7 +9,7 @@ interface AuthRequiredDialogProps {
   isOpen: boolean;
   onClose: () => void;
   redirectDelay?: number;
-  actionType?: "payment" | "subscription" | "booking";
+  actionType?: "payment" | "subscription" | "booking" | "product";
 }
 
 
@@ -61,6 +61,7 @@ export function AuthRequiredDialog({
     payment: "make a payment",
     subscription: "subscribe to a plan",
     booking: "book a service",
+    product: "purchase / add to cart"
   };
 
   return (
