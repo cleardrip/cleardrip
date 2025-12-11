@@ -31,7 +31,7 @@ export interface AuthState {
   adminRole: AdminRole;
   user: UserType | null;
   authLoading: boolean;
-  refetch: () => void;
+  refetch: (isLoading?: boolean) => Promise<void>;
   isSuperAdmin: boolean;
   isAdmin: boolean;
   isUser: boolean;

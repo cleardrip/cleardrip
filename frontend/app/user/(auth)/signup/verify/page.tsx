@@ -9,32 +9,29 @@ import { Button } from '@/components/core/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-// format phone number to +91XXXXXXXXXX
+// format phone number
 const formatPhoneNumber = (phone?: string | null): string | undefined => {
     if (!phone) return undefined;
-    const digits = phone.replace(/\D/g, '');
+
+    // Remove all non-digit characters except +
+    const digits = phone.replace(/[^0-9+]/g, '');
+
     if (!digits) return undefined;
 
     // Remove leading zeros
     let trimmed = digits.replace(/^0+/, '');
 
-    // If starts with 91 and total length > 12 (duplicated code), collapse it
-    if (/^(91){2,}\d+/.test(trimmed)) {
-        // remove repeated 91 occurrences at start, keep one
-        trimmed = '91' + trimmed.replace(/^(91)+/, '');
+    // If starts with +, assume it's correct
+    if (trimmed.startsWith('+')) {
+        return trimmed;
     }
 
-    // If already in full form 91 + 10 digits
-    if (/^91\d{10}$/.test(trimmed)) {
-        return `+${trimmed}`;
-    }
-
-    // If local 10-digit number, apply +91
-    if (/^\d{10}$/.test(trimmed)) {
+    // If 10 digits, assume India (+91)
+    if (trimmed.length === 10) {
         return `+91${trimmed}`;
     }
 
-    // Fallback: prefix plus (E.164-ish, caller should ensure correctness)
+    // Fallback: add +
     return `+${trimmed}`;
 };
 
@@ -162,8 +159,7 @@ const Verify = () => {
         setPhoneError(null);
         setPhoneMessage(null);
         try {
-            const formattedPhone = phone;
-            // const formattedPhone = formatPhoneNumber(phone);
+            const formattedPhone = formatPhoneNumber(phone);
             const result = await AuthService.verifyOtp(phoneOtpString, undefined, formattedPhone, undefined);
             setPhoneMessage(result.message || 'Phone verified!');
             setPhoneVerified(true);

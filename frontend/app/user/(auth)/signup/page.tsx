@@ -12,6 +12,8 @@ import { AuthService } from '@/lib/httpClient/userAuth';
 import { Input } from '@/components/core/Input';
 import { Button } from '@/components/core/Button';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState<SignupData>({
@@ -32,6 +34,13 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const router = useRouter();
+  const { authenticated, user, authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authenticated && user && !authLoading) {
+      router.push('/user/dashboard');
+    }
+  }, [authenticated, user, authLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -120,7 +129,9 @@ export default function SignupPage() {
       setAlert({ type: 'success', message: 'Account created successfully! Redirecting to verification...' });
 
       setTimeout(() => {
-        router.push(`/user/signup/verify?phone=${formData.phone}&email=${formData.email}`)
+        const encodedPhone = encodeURIComponent(formData.phone || '');
+        const encodedEmail = encodeURIComponent(formData.email || '');
+        router.push(`/user/signup/verify?phone=${encodedPhone}&email=${encodedEmail}`)
       }, 1500);
     } catch (error) {
       toast.error('Error in Signup', {
@@ -190,15 +201,32 @@ export default function SignupPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number <span className="text-black-500">*</span></Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter your phone number"
-                  className={errors.phone ? 'border-red-500' : ''}
-                />
+                <div className="flex rounded-md shadow-sm">
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                    +91
+                  </span>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                      if (value.length <= 10) {
+                        handleInputChange({
+                          ...e,
+                          target: {
+                            ...e.target,
+                            name: 'phone',
+                            value: value
+                          }
+                        });
+                      }
+                    }}
+                    placeholder="Enter 10 digit phone number"
+                    className={`rounded-l-none ${errors.phone ? 'border-red-500' : ''}`}
+                  />
+                </div>
                 {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
               </div>
             </div>
@@ -328,6 +356,6 @@ export default function SignupPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }

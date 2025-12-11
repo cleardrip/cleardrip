@@ -20,6 +20,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cleardrip - Smart Water Management",
   description: "Your trusted partner for smart water health monitoring and RO services.",
+  icons: {
+    icon: "/cleardrip-logo.png",
+  },
 };
 
 export default function RootLayout({

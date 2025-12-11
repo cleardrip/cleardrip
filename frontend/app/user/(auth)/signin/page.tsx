@@ -8,6 +8,8 @@ import { AuthService } from '@/lib/httpClient/userAuth';
 import { Alert } from '@/components/core/Alert';
 import { Input } from '@/components/core/Input';
 import { Button } from '@/components/core/Button';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 export default function SigninPage() {
   const [formData, setFormData] = useState<SigninData>({
@@ -18,11 +20,18 @@ export default function SigninPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const router = useRouter();
+  const { authenticated, user, authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authenticated && user && !authLoading) {
+      router.push('/user/dashboard');
+    }
+  }, [authenticated, user, authLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error for this field
     if (errors[name as keyof SigninData]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
@@ -48,7 +57,7 @@ export default function SigninPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -57,14 +66,14 @@ export default function SigninPage() {
     try {
       await AuthService.signin(formData);
       setAlert({ type: 'success', message: 'Sign in successful! Redirecting...' });
-      
+
       setTimeout(() => {
         window.location.href = '/user/dashboard';
       }, 1500);
     } catch (error) {
-      setAlert({ 
-        type: 'error', 
-        message: error instanceof Error ? error.message : 'Sign in failed' 
+      setAlert({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Sign in failed'
       });
     } finally {
       setIsLoading(false);
@@ -122,8 +131,9 @@ export default function SigninPage() {
               <div className="flex items-center">
                 <input
                   id="remember-me"
-                  name="remember-me"
                   type="checkbox"
+                  checked={formData.rememberMe || false}
+                  onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">

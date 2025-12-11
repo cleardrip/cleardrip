@@ -16,6 +16,7 @@ export interface SignupData {
 export interface SigninData {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface AuthResponse {

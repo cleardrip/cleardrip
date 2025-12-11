@@ -17,7 +17,7 @@ export const GetCurrentSubscriptionPlanHandler = async (req: FastifyRequest, res
     try {
         const subscription = await getSubscription(userId);
         if (!subscription) {
-            return sendError(res, 404, "No active subscription found.");
+            return sendError(res, 404, "No active subscription found.", "No active subscription found.");
         }
         return res.status(200).send({
             message: "Current subscription plan retrieved successfully.",

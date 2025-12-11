@@ -42,7 +42,7 @@ const CartButton: React.FC<{
         <Button
             variant="ghost"
             size="sm"
-            className="p-2 relative cursor-pointer" 
+            className="p-2 relative cursor-pointer"
             onClick={onClick}
             aria-label={`Shopping cart${count > 0 ? `, ${count} item${count > 1 ? 's' : ''}` : ''}`}
         >
@@ -210,6 +210,28 @@ const Navbar: React.FC = () => {
     const displayName = getUserDisplayName();
     const userInitial = getUserInitial();
     const dashboardHref = getDashboardRoute();
+
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center gap-2 flex-shrink-0 select-none">
+                            <Link href="/" className="flex items-center gap-2 outline-none focus:ring-2 focus:ring-blue-500 rounded">
+                                <img src="/cleardrip-logo.png" alt="Clear Drip Logo" className="w-8 h-8" width={32} height={32} />
+                                <span className="font-bold text-lg sm:text-xl text-gray-900 select-none">CLEARDRIP</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 
     return (
         <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">

@@ -13,12 +13,8 @@ export class SubscriptionClass {
       });
 
       const result = await response.json();
-
       if (!response.ok) {
-        toast.error("Failed to fetch current subscription", {
-          description: result.message || "Cannot retrieve subscription",
-        });
-        throw new Error(result.message || "Cannot retrieve subscription");
+        throw new Error(result.error || result.message || "Cannot retrieve subscription");
       }
 
       return result;
@@ -67,10 +63,13 @@ export class SubscriptionClass {
       const result = await response.json();
 
       if (!response.ok) {
+        if (result.error == 'No active subscription found.') {
+          return result;
+        }
         toast.error("Failed to fetch subscription plans", {
-          description: result.message || "Cannot retrieve subscription plans",
+          description: result.error || result.message || "Cannot retrieve subscription plans",
         });
-        throw new Error(result.message || "Cannot retrieve subscription plans");
+        throw new Error(result.error || result.message || "Cannot retrieve subscription plans");
       }
 
       return result;

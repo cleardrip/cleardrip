@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { encryptOtp, compareOtp } from "@/utils/auth";
 import { findUserByEmailOrPhone } from "./user.service";
-import { emailQueue, emailQueueName } from "@/queues/email.queue";
+import { sendEmail } from "@/lib/email/sendEmail";
+import { formatPhoneNumber } from "@/utils/phone";
 
 import { twilioClient } from "@/lib/twilio";
 import { logger } from "@/lib/logger";
@@ -14,10 +15,14 @@ export const generateAndSendOtp = async (phone?: string, email?: string): Promis
 
     if (phone) {
         try {
+            const formattedPhone = formatPhoneNumber(phone);
+            if (!formattedPhone) {
+                throw new Error("Invalid phone number format");
+            }
             const verification = await twilioClient.verify.v2
                 .services(process.env.TWILIO_VERIFY_SERVICE_SID!)
                 .verifications.create({
-                    to: phone.startsWith("+") ? phone : `+91${phone}`,
+                    to: formattedPhone,
                     channel: "sms",
                 });
 
@@ -65,13 +70,13 @@ export const SendEmailOtp = async (email: string) => {
     // Will use better later
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
-    // TODO: Send OTP via SMS/Email
-    emailQueue.add(emailQueueName, {
-        to: email,
-        subject: "Your OTP Code",
-        message: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
-        html: `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`
-    });
+    // Send OTP via Email directly
+    await sendEmail(
+        email,
+        "Your OTP Code",
+        `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+        `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`
+    );
 
     const encryptedOtp = await encryptOtp(otp);
 
@@ -103,12 +108,15 @@ export const verifyOtp = async (otp: string, phone?: string): Promise<{ success:
         }
 
         // remove white spaces and special characters from phone number
-        phone = phone.replace(/\s+/g, '').replace(/[^+\d]/g, '');
+        const formattedPhone = formatPhoneNumber(phone);
+        if (!formattedPhone) {
+            return { success: false, message: "Invalid phone number format" };
+        }
 
         const verification_check = await twilioClient.verify.v2
             .services(process.env.TWILIO_VERIFY_SERVICE_SID!)
             .verificationChecks.create({
-                to: (phone.startsWith("+") ? phone : `+91${phone}`),
+                to: formattedPhone,
                 code: otp,
             });
 

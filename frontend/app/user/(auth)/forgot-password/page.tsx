@@ -28,10 +28,10 @@ export default function ForgotPassword() {
             setMessage(response.data.message);
             setEmail('');
 
-            // Redirect to login after 4 seconds
-            setTimeout(() => {
-                router.push('/user/signin');
-            }, 4000);
+            // Redirect to login after 3 seconds
+            // setTimeout(() => {
+            //     router.push('/user/signin');
+            // }, 3000);
         } catch (err: any) {
             const errorMessage = err.response?.data?.error || 
                 'Failed to send reset email. Please try again.';

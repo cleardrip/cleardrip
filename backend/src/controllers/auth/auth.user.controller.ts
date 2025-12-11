@@ -8,10 +8,11 @@ import { generateToken } from "@/utils/jwt";
 import { comparePassword } from "@/utils/hash";
 import z, { ZodError } from "zod";
 import { UserSignUpTemplate } from "@/lib/email/template";
-import { emailQueue, emailQueueName } from "@/queues/email.queue";
+import { sendEmail } from "@/lib/email/sendEmail";
 import { generatePasswordResetToken, resetUserPassword, verifyPasswordResetToken } from "@/services/passwordReset.service";
 import { sendPasswordResetEmail } from "@/lib/email/sendPasswordResetEmail";
 import { generateAndSendOtp, SendEmailOtp } from "@/services/otp.service";
+import { formatPhoneNumber } from "@/utils/phone";
 
 export const signupHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -28,18 +29,26 @@ export const signupHandler = async (req: FastifyRequest, reply: FastifyReply) =>
         setAuthCookie(reply, token, "USER")
 
         if (user.email) {
-            // Send welcome email using the email queue
-            emailQueue.add(`welcome-email-${user.id}`, {
-                to: user.email,
-                subject: "Welcome to ClearDrip!",
-                message: `Hello ${user.name}, welcome to ClearDrip!`,
-                html: UserSignUpTemplate(user.name, user.email)
-            });
+            // Send welcome email directly
+            await sendEmail(
+                user.email,
+                "Welcome to ClearDrip!",
+                `Hello ${user.name}, welcome to ClearDrip!`,
+                UserSignUpTemplate(user.name, user.email)
+            );
             // send OTP email
-            SendEmailOtp(user.email);
+            try {
+                await SendEmailOtp(user.email);
+            } catch (ignore) {
+                logger.error(ignore, "Failed to send OTP email");
+            }
         }
         if (user.phone) {
-            generateAndSendOtp(user.phone, undefined);
+            try {
+                await generateAndSendOtp(user.phone, undefined);
+            } catch (ignore) {
+                logger.error(ignore, "Failed to send OTP SMS");
+            }
         }
         return reply.code(201).send({
             message: "Registration successful",
@@ -66,7 +75,7 @@ export const signinHandler = async (req: FastifyRequest, reply: FastifyReply) =>
             return reply.code(401).send({ error: "Invalid credentials" })
         }
         const token = generateToken({ userId: user.id, email: user.email, role: "USER" })
-        setAuthCookie(reply, token, "USER")
+        setAuthCookie(reply, token, "USER", body.rememberMe)
         const { password, ...safeUser } = user
         return reply.code(200).send({
             message: "Signin successful",
@@ -243,7 +252,7 @@ export const updateProfileHandler = async (req: FastifyRequest, reply: FastifyRe
         }
         // phone should be unique
         if (body.data.phone) {
-            const existingUser = await findUserByEmailOrPhone(undefined, body.data.phone)
+            const existingUser = await findUserByEmailOrPhone(undefined, formatPhoneNumber(body.data.phone))
             if (existingUser && existingUser.id !== user.userId) {
                 return sendError(reply, 400, "Phone number is already in use")
             }

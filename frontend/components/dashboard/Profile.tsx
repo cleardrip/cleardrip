@@ -9,9 +9,14 @@ import { AddressFormData, ExtendedFormData, FormData, FormErrors, SignupData } f
 import { toast } from 'sonner';
 
 const ProfileComponent: React.FC = () => {
-  const { user, refetch } = useAuth();
+  const { user, refetch, authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  // Fetch fresh data on mount
+  React.useEffect(() => {
+    refetch(false);
+  }, []);
 
   const [formData, setFormData] = useState<ExtendedFormData>({
     name: user?.name || '',
@@ -29,6 +34,14 @@ const ProfileComponent: React.FC = () => {
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   // Helper function to format address for display
   const formatAddressForDisplay = (address: any): string => {
@@ -95,12 +108,12 @@ const ProfileComponent: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       const updateData: Partial<SignupData> = {
         name: formData.name,
         email: formData.email,
-        phone: formData.phone || undefined,
+        phone: formData.phone ? (formData.phone.length === 10 ? formData.phone : formData.phone) : undefined,
       };
 
       // Handle address - only include if at least one field is filled
@@ -121,7 +134,7 @@ const ProfileComponent: React.FC = () => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
       toast.error(errorMessage);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -194,11 +207,11 @@ const ProfileComponent: React.FC = () => {
               </Button>
               <Button
                 onClick={handleSaveChanges}
-                disabled={isLoading}
+                disabled={isSaving}
                 size="sm"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 sm:px-4 rounded-lg flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed text-sm"
               >
-                {isLoading ? (
+                {isSaving ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -259,14 +272,22 @@ const ProfileComponent: React.FC = () => {
 
                 <div>
                   <Label htmlFor="phone" className="text-xs sm:text-sm font-medium text-gray-700">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`mt-1 w-full text-sm ${formErrors.phone ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-200`}
-                    placeholder="+91 XXXXXXXXXX"
-                  />
+                  <div className="relative mt-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">+91</span>
+                    </div>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        handleInputChange('phone', val);
+                      }}
+                      className={`w-full pl-12 text-sm ${formErrors.phone ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-200`}
+                      placeholder="XXXXXXXXXX"
+                    />
+                  </div>
                   {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
                 </div>
 

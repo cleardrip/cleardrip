@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma"
 import { SignupInput } from "../schemas/auth.schema"
 import { hashPassword } from "../utils/hash"
-import { generateAndSendOtp } from "./otp.service";
+import { formatPhoneNumber } from "@/utils/phone";
 
 export async function findUserByEmailOrPhone(email?: string, phone?: string, role: string = "USER") {
     if (!email && !phone) {
@@ -12,7 +12,10 @@ export async function findUserByEmailOrPhone(email?: string, phone?: string, rol
     const conditions = [];
 
     if (email) conditions.push({ email });
-    if (phone) conditions.push({ phone });
+    if (phone) {
+        const p = formatPhoneNumber(phone);
+        if (p) conditions.push({ phone: p });
+    }
 
     if (conditions.length > 0) {
         whereClause.OR = conditions;
@@ -43,7 +46,7 @@ export async function createUser(data: SignupInput) {
             data: {
                 name: data.name,
                 email: data.email,
-                phone: data.phone,
+                phone: formatPhoneNumber(data.phone),
                 password: hashedPassword,
                 addressId: address.id,
                 isEmailVerified: false,
@@ -52,15 +55,13 @@ export async function createUser(data: SignupInput) {
             include: { address: true }
         })
     })
-    generateAndSendOtp(data.phone)
-    generateAndSendOtp(undefined, data.email)
     return result
 }
 
 export async function findAndUpdateUser(userId: string, data: Partial<SignupInput>) {
     // Exclude password from update, but allow address update
-    const { address, password, ...userFields } = data;
-    const updateData: any = { ...userFields };
+    const { address, password, phone, ...userFields } = data;
+    const updateData: any = { ...userFields, phone: formatPhoneNumber(phone) };
 
     // Fetch current user to determine if address exists
     const existingUser = await findUserById(userId);

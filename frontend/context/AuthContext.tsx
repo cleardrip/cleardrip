@@ -2,7 +2,7 @@
 
 import { AuthState } from "@/lib/types/auth/auth"
 import { APIURL } from "@/utils/env";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react"
+import { createContext, ReactNode, useContext, useEffect, useState, useCallback } from "react"
 
 const AuthContext = createContext<AuthState>({
     authenticated: false,
@@ -10,7 +10,7 @@ const AuthContext = createContext<AuthState>({
     adminRole: null,
     user: null,
     authLoading: true,
-    refetch: () => { },
+    refetch: async (isLoading?: boolean) => { },
     isSuperAdmin: false,
     isAdmin: false,
     isUser: false,
@@ -27,38 +27,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isSuperAdmin: false,
     });
 
-    const fetchAuth = async () => {
-        setState(prev => ({
-            ...prev,
-            authLoading: true
-        }));
+    const fetchAuth = useCallback(async (isLoading: boolean = true) => {
+        if (isLoading) {
+            setState(prev => ({
+                ...prev,
+                authLoading: true
+            }));
+        }
 
         try {
             const response = await fetch(`${APIURL}/auth/me`, {
                 method: 'GET',
                 credentials: 'include',
             });
-            
+
             const data = await response.json();
-            
-            if(!response.ok){
+
+            if (!response.ok) {
                 throw new Error(data?.error || "Not Authenticated");
             }
 
             const role = data.role;
             const adminRole = data.user?.adminRole ?? null;
-                        
+
             setState({
                 authenticated: true,
                 role,
                 adminRole,
                 user: data.user,
                 authLoading: false,
-                // ✅ Fix: Check multiple possible super admin indicators
                 isSuperAdmin: role === "SUPER_ADMIN" || data.user?.role === "SUPERADMIN" || adminRole === "SUPER_ADMIN",
             });
         }
-        catch(error){ 
+        catch (error) {
             console.error('Error Fetching the Authentication', error);
             setState({
                 authenticated: false,
@@ -69,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 isSuperAdmin: false
             });
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchAuth();
@@ -89,19 +90,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 case 'USER':
                     logoutUrl = `${APIURL}/auth/signout`;
                     break;
-                default: 
+                default:
                     console.warn('No role found, skipping logout API Call');
                     break;
             }
 
-            if(logoutUrl){
+            if (logoutUrl) {
                 await fetch(logoutUrl, {
                     method: 'POST',
                     credentials: 'include'
                 });
             }
         }
-        catch(error) {
+        catch (error) {
             console.error('Logout Failed' + error);
         }
         finally {
@@ -120,13 +121,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ...state,
         refetch: fetchAuth,
         isUser: state.role === 'USER',
-        // ✅ Fix: Check multiple admin role patterns
         isAdmin: state.role === 'ADMIN' || state.role === 'SUPER_ADMIN' || state.adminRole === 'ADMIN',
-        // ✅ Fix: Check multiple super admin patterns
         isSuperAdmin: state.role === 'SUPER_ADMIN' || state.adminRole === 'SUPER_ADMIN',
         logout,
     };
-    
+
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

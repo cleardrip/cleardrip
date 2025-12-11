@@ -1,4 +1,5 @@
 "use client";
+import { CreditCard } from 'lucide-react';
 import { APIURL } from '@/utils/env';
 import React, { useEffect, useState } from 'react'
 
@@ -309,7 +310,15 @@ const Payment = () => {
                     ))}
                 </div>
             ) : (!paymentData || paymentData.length === 0) ? (
-                <p>No payments found.</p>
+                <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50 text-center">
+                    <div className="bg-white p-4 rounded-full shadow-sm mb-4">
+                        <CreditCard className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">No Payment History</h3>
+                    <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                        No payments have been made yet. Any purchases or subscription payments will appear here.
+                    </p>
+                </div>
             ) : (
                 <ul className="space-y-3">
                     {paymentData.map((p, pIdx) => (
@@ -539,40 +548,42 @@ const Payment = () => {
                 </ul>
             )}
 
-            <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-                <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page <= 1}
-                    className="px-3 py-1 rounded border bg-white disabled:opacity-50"
-                >
-                    Prev
-                </button>
+            {paymentData && paymentData.length > 0 && (
+                <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page <= 1}
+                        className="px-3 py-1 rounded border bg-white disabled:opacity-50"
+                    >
+                        Prev
+                    </button>
 
-                {total !== null ? (() => {
-                    const totalPages = Math.max(1, Math.ceil(total / limit));
-                    const pages: number[] = [];
-                    const start = Math.max(1, page - 2);
-                    const end = Math.min(totalPages, page + 2);
-                    for (let i = start; i <= end; i++) pages.push(i);
-                    return pages.map(n => (
-                        <button
-                            key={`page-${n}`}
-                            onClick={() => setPage(n)}
-                            className={`px-3 py-1 rounded border ${n === page ? 'bg-gray-200' : 'bg-white'}`}
-                        >
-                            {n}
-                        </button>
-                    ));
-                })() : null}
+                    {total !== null ? (() => {
+                        const totalPages = Math.max(1, Math.ceil(total / limit));
+                        const pages: number[] = [];
+                        const start = Math.max(1, page - 2);
+                        const end = Math.min(totalPages, page + 2);
+                        for (let i = start; i <= end; i++) pages.push(i);
+                        return pages.map(n => (
+                            <button
+                                key={`page-${n}`}
+                                onClick={() => setPage(n)}
+                                className={`px-3 py-1 rounded border ${n === page ? 'bg-gray-200' : 'bg-white'}`}
+                            >
+                                {n}
+                            </button>
+                        ));
+                    })() : null}
 
-                <button
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={total !== null ? page >= Math.ceil((total || 0) / limit) : (paymentData ? paymentData.length < limit : true)}
-                    className="px-3 py-1 rounded border bg-white disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
+                    <button
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={total !== null ? page >= Math.ceil((total || 0) / limit) : (paymentData ? paymentData.length < limit : true)}
+                        className="px-3 py-1 rounded border bg-white disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div >
     )
 }
