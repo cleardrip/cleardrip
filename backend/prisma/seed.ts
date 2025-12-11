@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('Starting database seeding...');
+    console.log('Started deleting database.');
 
     // Clear existing data
     await prisma.notification.deleteMany();
@@ -14,15 +14,20 @@ async function main() {
     await prisma.serviceBooking.deleteMany();
     await prisma.serviceDefinition.deleteMany();
     await prisma.oTPSession.deleteMany();
-    // await prisma.slot.deleteMany();
+    await prisma.slot.deleteMany();
     await prisma.tDSLog.deleteMany();
-    await prisma.user.deleteMany();
     await prisma.whatsAppLog.deleteMany();
     await prisma.address.deleteMany();
     await prisma.admin.deleteMany();
+    await prisma.paymentTransaction.deleteMany();
+    await prisma.paymentOrderItem.deleteMany();
+    await prisma.paymentOrder.deleteMany();
     await prisma.product.deleteMany();
     await prisma.subscription.deleteMany();
     await prisma.subscriptionPlan.deleteMany();
+    await prisma.user.deleteMany();
+
+    console.log('Data deleted.\nStarted Inserting')
 
     // Hash passwords
     const userPassword = await bcrypt.hash('12345678', 10);
