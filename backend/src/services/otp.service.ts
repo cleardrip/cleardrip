@@ -3,6 +3,7 @@ import { encryptOtp, compareOtp } from "@/utils/auth";
 import { findUserByEmailOrPhone } from "./user.service";
 import { sendEmail } from "@/lib/email/sendEmail";
 import { formatPhoneNumber } from "@/utils/phone";
+import { EmailTemplates } from "@/lib/email/templates";
 
 import { twilioClient } from "@/lib/twilio";
 import { logger } from "@/lib/logger";
@@ -75,7 +76,7 @@ export const SendEmailOtp = async (email: string) => {
         email,
         "Your OTP Code",
         `Your OTP code is ${otp}. It is valid for 5 minutes.`,
-        `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`
+        EmailTemplates.otpEmail(otp)
     );
 
     const encryptedOtp = await encryptOtp(otp);

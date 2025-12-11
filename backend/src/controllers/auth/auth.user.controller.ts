@@ -7,7 +7,7 @@ import { sendError } from "@/utils/errorResponse";
 import { generateToken } from "@/utils/jwt";
 import { comparePassword } from "@/utils/hash";
 import z, { ZodError } from "zod";
-import { UserSignUpTemplate } from "@/lib/email/template";
+import { EmailTemplates } from "@/lib/email/templates";
 import { sendEmail } from "@/lib/email/sendEmail";
 import { generatePasswordResetToken, resetUserPassword, verifyPasswordResetToken } from "@/services/passwordReset.service";
 import { sendPasswordResetEmail } from "@/lib/email/sendPasswordResetEmail";
@@ -34,7 +34,7 @@ export const signupHandler = async (req: FastifyRequest, reply: FastifyReply) =>
                 user.email,
                 "Welcome to ClearDrip!",
                 `Hello ${user.name}, welcome to ClearDrip!`,
-                UserSignUpTemplate(user.name, user.email)
+                EmailTemplates.welcomeEmail(user.name, user.email)
             );
             // send OTP email
             try {
